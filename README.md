@@ -14,9 +14,9 @@ Design notes: may want separate objects for Gene, Population..., or just represe
 
 -Data representation:
 	- Gene: an array, length X
-	- Fitness: an array, length Y (number of games won out of Z games by corresponding gene from population)
+	- Fitness: an array, length Y (number of games won out of 10 games by corresponding gene from population)
 		- may need to have structure to map index to score if we use sorting at all for the parent-pairing.
-	- Current population: list of gene arrays, length Y
+	- Current population: list of gene arrays, length 10
 	- index: int, gene to be evalutated
 	- gamesPlayed: int, # of games played by currently evaluated gene, default: 0
 	- Notes:
