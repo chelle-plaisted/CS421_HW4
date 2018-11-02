@@ -9,7 +9,6 @@ from Move import Move
 from GameState import *
 from AIPlayerUtils import *
 
-
 ##
 #AIPlayer
 #Description: The responsbility of this class is to interact with the game by
@@ -30,10 +29,22 @@ class AIPlayer(Player):
     ##
     def __init__(self, inputPlayerId):
         super(AIPlayer,self).__init__(inputPlayerId, "Random")
-    
+        # general values to determine scope of algorithm
+        self.popSize = 10 #TODO: increase to min 1000
+        self.gamesPerGene = 10 #TODO increase to min 1000
+        # data to reprsent the current population & fitness
+        self.currentPop = []
+        self.currentFitness = []
+        self.initializePop()
+        # the current index of genes to evaluate
+        self.indexToEval = 0
+        # how many games have been played for the gene currently being evalutated
+        self.gamesPlayed = 0
+
     ##
     #getPlacement
     #
+    # TODO: adjust to use genetic algorithm
     #Description: called during setup phase for each Construction that
     #   must be placed by the player.  These items are: 1 Anthill on
     #   the player's side; 1 tunnel on player's side; 9 grass on the
@@ -84,7 +95,64 @@ class AIPlayer(Player):
             return moves
         else:
             return [(0, 0)]
-    
+
+    ##
+    # initializePop
+    # Description: initializes the genes of the population to randomized values
+    # and sets the default value of the fitness to 0.
+    ##
+    def initializePop(self):
+        for i in range(0, self.popSize):
+            pass
+            # make a new gene
+
+            # add it to the current Population
+
+            # set the default fitness to 0
+
+    ##
+    # generateChildren
+    # Description: generate 2 children for parents with a set chance of mutation
+    # using a random crossover point.
+    #
+    # Parameters:
+    #   parents: tuple of 2 parents
+    #
+    # Return: list of 2 children
+    ##
+    def generateChildren(self, parents):
+        pass
+
+    ##
+    # makeNextGen
+    # Description: select the most fit groups of parents and fill the next generation
+    #
+    ##
+    def makeNextGen(self):
+        nextGen = []
+        # until my next generation is full, keep selecting parents, mating them,
+        # and adding the children to the next generation
+        while len(nextGen) < self.popSize:
+            # select parents
+            parents = self.selectParents()
+            # mate parents
+            children = self.generateChildren(parents)
+            # add chldren to next generation
+            nextGen += children
+
+        # retire current population by resetting it as the new generation
+        self.currentPop = nextGen
+
+    ##
+    # selectParents
+    #
+    # Description: select the parents to mate for the next child
+    #
+    # Return: a tuple of parent genes
+    ##
+    def selectParents(self):
+        return(None, None)
+
     ##
     #getMove
     #Description: Gets the next move from the Player.
@@ -102,9 +170,9 @@ class AIPlayer(Player):
         numAnts = len(currentState.inventories[currentState.whoseTurn].ants)
         while (selectedMove.moveType == BUILD and numAnts >= 3):
             selectedMove = moves[random.randint(0,len(moves) - 1)];
-            
+
         return selectedMove
-    
+
     ##
     #getAttack
     #Description: Gets the attack to be made from the Player
@@ -121,8 +189,26 @@ class AIPlayer(Player):
     ##
     #registerWin
     #
-    # This agent doens't learn
+    # Updates the fitness for current gene and advances to the next gene if necessary.
+    # TODO: add code to write to evidence file
     #
     def registerWin(self, hasWon):
-        #method templaste, not implemented
-        pass
+        # update the games played
+        self.gamesPlayed += 1
+        # update fitness
+        if hasWon:
+            self.currentFitness[self.indexToEval] += 1
+        else:
+            self.currentFitness[self.indexToEval] -= 1
+
+        # if done with current gene, advance to next
+        if self.gamesPlayed == self.gamesPerGene :
+            # if that was the last gene, make a new generation
+            # otherwise, move to next
+            if self.indexToEval == self.popSize - 1:
+                self.indexToEval = 0
+                self.makeNextGen()
+            else:
+                self.indexToEval += 1
+            # reset the number of games played
+            self.gamesPlayed = 0
