@@ -36,7 +36,7 @@ class Gene():
     #   -populate all indicies with random number
     #   -indices 0-39 = AI player's side of board. On this half:
     #       -Top value: anthill location
-    #       =Next value: tunnell location
+    #       =Next value: tunnel location
     #       -Next 9 values: grass Locations
     #   -indices 40-79 = enemy player's side of board. On this half:
     #       -Top 2 values: enemy food Locations
@@ -73,6 +73,44 @@ class Gene():
         else:
             self.cells[index] = random.randint(0, 2**31 -1)
 
+    ##
+    # getCoords
+    #
+    # Description: get the corresponding map locations for a given indexToEval
+    #
+    # Return: a tuple representing a location on the gameboard or -1 for error
+    def getCoords(self, index):
+        # error check
+        if index < 0 or index > self.numCells -1:
+            return -1
+        # if in the second half of cells, add an offset to put the cell on the enemy side
+        if index >= self.numCells / 2:
+            index += 20 # number of neutral cells
+        # x location
+        x = index % 10
+        # y location
+        y = index / 10
+
+        return (x,y)
+
+
+    ##
+    # getConstructions
+    #
+    # Description: get the Constructions needed for a given phase of the game as
+    # defined by the structure of the current gene
+    #
+    # Parameters:
+    #   phase: SETUP_PHASE_1 (get objects on this AI's side of board, indices 0-39)
+    #          SETUP_PHASE_2 (get objects on enemy's side of board, indices 40-79)
+    # Return: a list of coordinates representing either (anthill_location, tunnel_location,
+    # 9 grqss locations) or (enemy food 1, enemy food 2)
+    def getConstructions(self, phase):
+        constructions = []
+        if phase == SETUP_PHASE_1:
+            pass
+        elif phase == SETUP_PHASE_2:
+            pass
 
 ##
 #AIPlayer
@@ -123,6 +161,8 @@ class AIPlayer(Player):
     #Return: The coordinates of where the construction is to be placed
     ##
     def getPlacement(self, currentState):
+        # TODO, remove code below once getConstructions is finished
+        # return self.currentPop[self.indexToEval].getConstructions(currentState.phase)
         numToPlace = 0
         #implemented by students to return their next move
         if currentState.phase == SETUP_PHASE_1:    #stuff on my side
@@ -294,6 +334,10 @@ class AIPlayer(Player):
 
 ################################################################################
 #def mutateGene(self, index):
+################################################################################
+
+################################################################################
+#def getCoords(index):
 ################################################################################
 
 ################################################################################
