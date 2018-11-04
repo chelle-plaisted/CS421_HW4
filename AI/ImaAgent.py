@@ -248,15 +248,39 @@ class AIPlayer(Player):
         # retire current population by resetting it as the new generation
         self.currentPop = nextGen
 
-    ## TODO COMPLETE
+    ## TODO EDIT: do we want any tweaks, prune bottom 10% of population,
+    # allow parent to 'self mate' and continue on a supposedly goot gene set....
     # selectParents
     #
-    # Description: select the parents to mate for the next child
+    # Description: select the parents to mate for the next child according to
+    # the Fitness Proportionate Selection Method
     #
     # Return: a tuple of parent genes
     ##
     def selectParents(self):
-        return(None, None)
+        # get sum of fitnesses
+        sum = 0
+        for score in self.currentFitness:
+            sum += score
+
+        # continue selection until 2 valid parents are generated
+        selected = []
+        while len(selected) < 2:
+            # generate random value
+            val = random.random() * sum
+            # select using random value
+            chosen = -1
+            for idx in range(0, len(self.currentPop)):
+                val -= self.currentFitness[idx]
+                if val < 0 :
+                    chosen = idx
+                    break
+            # don't choose the same parent twice
+            if not chosen in selected:
+                selected.append(chosen)
+
+        # return the selected parents
+        parents = (self.currentPop[selected[0]], self.currentPop[selected[1]])
 
     ##
     #getMove

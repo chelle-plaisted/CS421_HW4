@@ -21,11 +21,11 @@ Design notes: may want separate objects for Gene, Population..., or just represe
 	- gamesPlayed: int, # of games played by currently evaluated gene, default: 0
 	- Notes:
 		start with small population size: 10 --> 100+
-	
+
 -To determine the best layout:
 
 1. initializePop(): Initialize the population of genes with random values and reset the fitness list to default values
-	-randomization of genes, ensure validity: 
+	-randomization of genes, ensure validity:
 		-Anthill, tunnel, grass can only go in valid, un-used locations on AI/current player's side of the board
 		-enemy food can only go in unused, valid squares on their side of the board.
 	-default fitness score: 0
@@ -40,6 +40,7 @@ Design notes: may want separate objects for Gene, Population..., or just represe
 3. makeNextGen(): Make the next generation of children by selecting the most fit parents.
 	- Note: parents can be selected more than once (or else you can't maintain a population of the same  size and still weed out old parents)
 	- technique: weighted randomization
+		- https://www.analyticsvidhya.com/blog/2017/07/introduction-to-genetic-algorithm/
 		- via https://en.wikipedia.org/wiki/Selection_(genetic_algorithm):
 			- normalize fitness function values: divide each by the sum of all
 			- sort by fitness function values (descending)
@@ -50,7 +51,7 @@ Design notes: may want separate objects for Gene, Population..., or just represe
 		- if ^ is too computationally demanding: use stochastic acceptance (aka fitness proportionate selection/roulette-wheel selection)
 			- variants: stochastic universal sampling, tournament selection (best of random subset), truncation selection (take best proportion of population, i.. 1/3, 1/2)
 			- only look at those with fitness > xx
-			- retain a few of the best individuals in the population. 
+			- retain a few of the best individuals in the population.
 
 4. getPlacement(): Use the current to-be-evaluated gene (stored in index) to determine the game placement.
 
@@ -70,7 +71,7 @@ Design notes: may want separate objects for Gene, Population..., or just represe
 			- call makeNextGen()
 			- set index = 0
 
-Evidence file/Process: 
+Evidence file/Process:
 
 1. use the asciiPrintState in register win to record the best performing gene of each generation >> evidence file
 2. Run a tournament (at least 20 generations):
