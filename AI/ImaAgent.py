@@ -29,7 +29,7 @@ class Gene():
             self.cells = self.initializeGene()
         else:
             self.cells = cells
-        
+
     ##
     # initializeGene
     # Description: Generate a new gene reprsentation in array as follows:
@@ -45,7 +45,7 @@ class Gene():
     def initializeGene(self):
         self.cells = [random.randint(0, 2**31 -1)] * self.numCells
 
-    ##
+    ## TODO COMPLETE
     # mateGenes
     #
     # Description: make the current gene with another parent gene by selecting
@@ -55,7 +55,8 @@ class Gene():
     # Parameters:
     #   otherParent: other parent Gene to mate with
     #
-    # Return: a new child Gene
+    # Return: 2 child Genes (1 where the first half comes from current gene, and
+    # a second where the first half comes from otherParent)
     ##
     def mateGenes(self, otherParent):
         pass
@@ -99,6 +100,7 @@ class AIPlayer(Player):
         # data to reprsent the current population & fitness
         self.currentPop = []
         self.currentFitness = []
+        self.defaultFitness = 0
         self.initializePop()
         # the current index of genes to evaluate
         self.indexToEval = 0
@@ -170,8 +172,9 @@ class AIPlayer(Player):
             # make a new gene
             gene = Gene()
             # add it to the current Population
-
+            self.currentPop.append(gene)
             # set the default fitness to 0
+            self.currentFitness.append(self.defaultFitness)
 
     ##
     # generateChildren
@@ -184,7 +187,7 @@ class AIPlayer(Player):
     # Return: list of 2 children
     ##
     def generateChildren(self, parents):
-        pass
+        return parents[0].mateGenes(parents[1])
 
     ##
     # makeNextGen
@@ -206,7 +209,7 @@ class AIPlayer(Player):
         # retire current population by resetting it as the new generation
         self.currentPop = nextGen
 
-    ##
+    ## TODO COMPLETE
     # selectParents
     #
     # Description: select the parents to mate for the next child
@@ -275,3 +278,44 @@ class AIPlayer(Player):
                 self.indexToEval += 1
             # reset the number of games played
             self.gamesPlayed = 0
+
+################################################################################
+#TODO COMPLETE
+#UNIT TESTS
+################################################################################
+
+################################################################################
+#def initializeGene(self):
+################################################################################
+
+################################################################################
+#def mateGenes(self, otherParent):
+################################################################################
+
+################################################################################
+#def mutateGene(self, index):
+################################################################################
+
+################################################################################
+# def getPlacement(self, currentState):
+################################################################################
+
+################################################################################
+# def initializePop(self):
+################################################################################
+
+################################################################################
+# def generateChildren(self, parents):
+################################################################################
+
+################################################################################
+# def makeNextGen(self):
+################################################################################
+
+################################################################################
+# def selectParents(self):
+################################################################################
+
+################################################################################
+# def registerWin(self, hasWon):
+################################################################################
