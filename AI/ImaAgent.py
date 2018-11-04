@@ -130,7 +130,7 @@ class AIPlayer(Player):
     #   cpy           - whether the player is a copy (when playing itself)
     ##
     def __init__(self, inputPlayerId):
-        super(AIPlayer,self).__init__(inputPlayerId, "Random")
+        super(AIPlayer,self).__init__(inputPlayerId, "Ima Agent")
         # general values to determine scope of algorithm
         self.popSize = 10 #TODO: increase to min 1000
         self.gamesPerGene = 10 #TODO increase to min 1000
@@ -333,11 +333,10 @@ class AIPlayer(Player):
         # if done with current gene, advance to next
         if self.gamesPlayed == self.gamesPerGene :
             # if that was the last gene, make a new generation
-            # otherwise, move to next
             if self.indexToEval == self.popSize - 1:
                 self.indexToEval = 0
                 self.makeNextGen()
-            else:
+            else: # otherwise, move to next
                 self.indexToEval += 1
             # reset the number of games played
             self.gamesPlayed = 0
