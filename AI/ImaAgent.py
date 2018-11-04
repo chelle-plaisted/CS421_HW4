@@ -10,6 +10,70 @@ from GameState import *
 from AIPlayerUtils import *
 
 ##
+##
+# Gene class
+#
+# Description: A gene reprsents the essential information of the game layout
+# through an array and provides functionality to manipulate the gene as necessary
+#
+##
+
+class Gene():
+    #__init__
+    # Description: Creates a new Gene
+    ##
+    def __init__(self, cells = None):
+        self.numCells = 80 # 40 for each owned half of the gameboard
+        # Gene contents
+        if cells == None:
+            self.cells = self.initializeGene()
+        else:
+            self.cells = cells
+        
+    ##
+    # initializeGene
+    # Description: Generate a new gene reprsentation in array as follows:
+    #   -populate all indicies with random number
+    #   -indices 0-39 = AI player's side of board. On this half:
+    #       -Top value: anthill location
+    #       =Next value: tunnell location
+    #       -Next 9 values: grass Locations
+    #   -indices 40-79 = enemy player's side of board. On this half:
+    #       -Top 2 values: enemy food Locations
+    #   - array values stored in self.cells
+    ##
+    def initializeGene(self):
+        self.cells = [random.randint(0, 2**31 -1)] * self.numCells
+
+    ##
+    # mateGenes
+    #
+    # Description: make the current gene with another parent gene by selecting
+    # a random crossover point and making a new gene that splices the cell contents
+    # of its parents at the given crossover.
+    #
+    # Parameters:
+    #   otherParent: other parent Gene to mate with
+    #
+    # Return: a new child Gene
+    ##
+    def mateGenes(self, otherParent):
+        pass
+
+    ##
+    # mutateGene
+    #
+    # Description: given an index to mutate, reset this specific cell to a new
+    # random value.
+    ##
+    def mutateGene(self, index):
+        if index < 0 or index > self.numCells - 1:
+            pass # do nothing, this is an invalid index to mutate
+        else:
+            self.cells[index] = random.randint(0, 2**31 -1)
+
+
+##
 #AIPlayer
 #Description: The responsbility of this class is to interact with the game by
 #deciding a valid move based on a given game state. This class has methods that
@@ -103,9 +167,8 @@ class AIPlayer(Player):
     ##
     def initializePop(self):
         for i in range(0, self.popSize):
-            pass
             # make a new gene
-
+            gene = Gene()
             # add it to the current Population
 
             # set the default fitness to 0
