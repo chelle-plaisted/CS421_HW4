@@ -158,10 +158,8 @@ class Gene():
 
         #setup phase 1: placing anthill, tunnel, grass
         if phase == SETUP_PHASE_1:
-            print('phase 1')
-
             #find 9 biggest number indices
-            while count < 9:
+            while count < 11:
                 greatestNum = -1
                 greatestNumIdx = 0
                 for i in range(0,40): #find 1 of the 9 highest numbers
@@ -171,18 +169,9 @@ class Gene():
                 constructionIndices.append(greatestNumIdx)
                 count = count + 1
 
-            #convert indices to coords
-            for i in constructionIndices:
-                coords = self.getCoords(i)
-                constructions.append(coords)
-
-            #done
-            print('my stuff: ', constructions)
-            return constructions
-
         #setup phase 2: placing food on enemy side
         elif phase == SETUP_PHASE_2:
-            print('phase 2')
+            # print('phase 2')
             #indices of locations we cannot place food in
             #because Booger always places its constructs there
             occupiedLocations = [49,58,59,64,67,68,69,76,77,78,79]
@@ -198,14 +187,13 @@ class Gene():
                 constructionIndices.append(greatestNumIdx)
                 count = count + 1
 
-            #convert indices to coords
-            for i in constructionIndices:
-                coords = self.getCoords(i)
-                constructions.append(coords)
+        #convert indices to coords
+        for i in constructionIndices:
+            coords = self.getCoords(i)
+            constructions.append(coords)
 
-            #done
-            print('enemy food: ', constructions)
-            return constructions
+        #done
+        return constructions
 
 
 
@@ -259,7 +247,7 @@ class AIPlayer(Player):
     ##
     def getPlacement(self, currentState):
         # TODO, remove code below once getConstructions is finished
-         return self.currentPop[self.indexToEval].getConstructions(currentState.phase)
+        return self.currentPop[self.indexToEval].getConstructions(currentState.phase)
         # numToPlace = 0
         # #implemented by students to return their next move
         # if currentState.phase == SETUP_PHASE_1:    #stuff on my side

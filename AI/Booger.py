@@ -35,9 +35,9 @@ class AIPlayer(Player):
         #variables (see getMove() below)
         self.myFood = None
         self.myTunnel = None
-    
+
     ##
-    #getPlacement 
+    #getPlacement
     #
     # The agent uses a hardcoded arrangement for phase 1 to provide maximum
     # protection to the queen.  Enemy food is placed randomly.
@@ -46,7 +46,7 @@ class AIPlayer(Player):
         self.myFood = None
         self.myTunnel = None
         if currentState.phase == SETUP_PHASE_1:
-            return [(0,0), (5, 1), 
+            return [(0,0), (5, 1),
                     (0,3), (1,2), (2,1), (3,0), \
                     (0,2), (1,1), (2,0), \
                     (0,1), (1,0) ];
@@ -67,9 +67,9 @@ class AIPlayer(Player):
                         currentState.board[x][y].constr == True
                 moves.append(move)
             return moves
-        else:            
+        else:
             return None  #should never happen
-    
+
     ##
     #getMove
     #
@@ -112,7 +112,7 @@ class AIPlayer(Player):
             myWorker = workerList[0]
             if (myWorker.hasMoved):
                 return Move(END, None, None)
-            
+
 
         #if the queen is on the anthill move her
         myQueen = myInv.getQueen()
@@ -144,20 +144,20 @@ class AIPlayer(Player):
                     return Move(MOVE_ANT, [drone.coords, (droneX, droneY)], None)
                 else:
                     return Move(MOVE_ANT, [drone.coords], None)
-                    
+
         #if the worker has food, move toward tunnel
         if (myWorker.carrying):
             path = createPathToward(currentState, myWorker.coords,
                                     self.myTunnel.coords, UNIT_STATS[WORKER][MOVEMENT])
             return Move(MOVE_ANT, path, None)
-            
+
         #if the worker has no food, move toward food
         else:
             path = createPathToward(currentState, myWorker.coords,
                                     self.myFood.coords, UNIT_STATS[WORKER][MOVEMENT])
             return Move(MOVE_ANT, path, None)
-                              
-    
+
+
     ##
     #getAttack
     #
@@ -165,7 +165,7 @@ class AIPlayer(Player):
     #
     def getAttack(self, currentState, attackingAnt, enemyLocations):
         return enemyLocations[0]  #don't care
-        
+
     ##
     #registerWin
     #
