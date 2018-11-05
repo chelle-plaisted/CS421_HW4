@@ -26,6 +26,7 @@ class Gene():
 
         # 40 for our side, 40 on enemy side
         self.numCells = 80
+        self.chanceOfMutate = 0.05
 
         # Gene contents
         if cells == None:
@@ -46,7 +47,9 @@ class Gene():
     #   - array values stored in self.cells
     ##
     def initializeGene(self):
-        self.cells = [random.randint(0, 2**31 -1)] * self.numCells
+        self.cells = []
+        for i in range (0, self.numCells):
+            self.cells += [random.randint(0, 2**31 -1)]
 
     ## TODO COMPLETE
     # mateGenes
@@ -60,39 +63,61 @@ class Gene():
     #
     # Return: 2 child Genes (1 where the first half comes from current gene, and
     # a second where the first half comes from otherParent)
-    ##
+    ## TODO remove unecessary code
     def mateGenes(self, otherParent):
 
         #select crossover point
         crossPoint = random.randint(0, self.numCells)
 
         #generate first child gene
-        child1 = Gene()
-        for i in range(0,crossPoint):
-            child1.cells[i] = self.cells[i]
-        for i in range(crossPoint, self.numCells):
-            child1.cells[i] = otherParent.cells[i]
+        cells = []
+        cells += self.cells[0:crossPoint]
+        cells += otherParent.cells[crossPoint:]
+        child1 = Gene(cells)
+
+
+
+        # for i in range(0,crossPoint):
+        #     child1.cells[i] = self.cells[i]
+        # for i in range(crossPoint, self.numCells):
+        #     child1.cells[i] = otherParent.cells[i]
 
         #generate second child gene
-        child2 = Gene()
-        for i in range(0,crossPoint):
-            child2.cells[i] = otherParent.cells[i]
-        for i in range(crossPoint, self.numCells):
-            child2.cells[i] = self.cells[i]
+        # child2 = Gene()
+        # for i in range(0,crossPoint):
+        #     child2.cells[i] = otherParent.cells[i]
+        # for i in range(crossPoint, self.numCells):
+        #     child2.cells[i] = self.cells[i]
 
-        return child1, child2
+        cells = []
+        cells += otherParent.cells[0:crossPoint]
+        cells += self.cells[crossPoint:]
+        child2 = Gene(cells)
+
+        return (self.mutateGene(child1), self.mutateGene(child2))
 
     ##
-    # mutateGene
+    # mutate
     #
-    # Description: given an index to mutate, reset this specific cell to a new
-    # random value.
+    # Description: apply a chance of mutation to a Gene and mutate if necessary
+    #
+    # Parameters:
+    #   gene : a gene that could be mutated
+    #
+    # Return: a gene, either mutated or left alone
     ##
-    def mutateGene(self, index):
-        if index < 0 or index > self.numCells - 1:
-            pass # do nothing, this is an invalid index to mutate
-        else:
-            self.cells[index] = random.randint(0, 2**31 -1)
+    def mutateGene(self, gene):
+        # mutate if needed
+        mutation = random.random()
+        if mutation <= self.chanceOfMutate:
+            # mutate the gene
+            idxToMutate = random.randint(0, self.numCells)
+            val = random.randint(0, 2**31 -1)
+            # print('mutating: ', gene.cells[idxToMutate], ' to ', val)
+            gene.cells[idxToMutate] = val
+
+
+        return gene
 
     ##
     # getCoords
@@ -105,7 +130,30 @@ class Gene():
         if index < 0 or index > self.numCells -1:
             return -1
         # if in the second half of cells, add an offset to put the cell on the enemy side
-        if index >= self.numCells / 2:
+        if index >= 40:
+            # TODO delete if unnecessary
+            # if index >= 49:
+            #     index += 1
+            #     if index >= 58:
+            #         index += 1
+            #         if index >= 59:
+            #             index += 1
+            #             if index >= 64:
+            #                 index += 1
+            #                 if index >= 67:
+            #                     index += 1
+            #                     if index >= 68:
+            #                         index += 1
+            #                         if index >= 69:
+            #                             index += 1
+            #                             if index >= 76:
+            #                                 index += 1
+            #                                 if index >= 77:
+            #                                     index += 1
+            #                                     if index >= 78:
+            #                                         index += 1
+            #                                         if index >= 79:
+            #                                             index += 1
             index += 20 # number of neutral cells
         # x location
         x = index % 10
@@ -135,7 +183,7 @@ class Gene():
         if phase == SETUP_PHASE_1:
 
             #find 9 biggest number indices
-            while count < 9: 
+            while count < 9:
                 greatestNum = -1
                 greatestNumIdx = 0
                 for i in range(0,40): #find 1 of the 9 highest numbers
@@ -144,16 +192,16 @@ class Gene():
                         greatestNumIdx = i
                 constructionIndices.append(greatestNumIdx)
                 count = count + 1
-            
+
             #convert indices to coords
             for i in constructionIndices:
                 x = i % 10
                 y = (int)(i / 10)
                 constructions.append((x,y))
-            
+
             #done
             return constructions
-            
+
         #setup phase 2: placing food on enemy side
         elif phase == SETUP_PHASE_2:
 
@@ -417,19 +465,103 @@ class AIPlayer(Player):
 ################################################################################
 #TODO COMPLETE
 #UNIT TESTS
+testAgent = AIPlayer(0)
+testGene = Gene()
 ################################################################################
 
 ################################################################################
 #def initializeGene(self):
 ################################################################################
+testGene.initializeGene()
+takenValues = []
+repeats = 0
+count = 0
+for cell in testGene.cells:
+    if not cell in takenValues:
+        takenValues.append(cell)
+    else:
+        repeats += 1
+    count += 1
+
+# check not too many repeats
+if not (float(repeats) / testGene.numCells < .10):
+    print('- Function initializeGene() failed test 1. Too many repeats.')
+
+# check length
+if not count == testGene.numCells:
+    print('- Function initializeGene() failed test 2. Number of cells expected: ',
+        testGene.numCells, ' ; Number of cells found: ', count)
 
 ################################################################################
 #def mateGenes(self, otherParent):
 ################################################################################
+# make a second gene
+testGene2 = Gene()
+
+children = testGene.mateGenes(testGene2)
+
+# check number of children
+if not len(children) == 2:
+    print('- Function mateGenes() failed test 1. Incorrect number of children: ', children)
+
+# check length of children cells
+if not len(children[0].cells) == testGene.numCells:
+    print('- Function mateGenes() failed test 2. Child 1 wrong length: ', len(children[0].cells))
+if not len(children[1].cells) == testGene.numCells:
+    print('- Function mateGenes() failed test 3. Child 2 wrong length: ', len(children[1].cells))
+
+# check format of child 1
+inParent1 = True
+error = -1
+for i in range(0, len(children[0].cells)):
+    if children[0].cells[i] == testGene.cells[i] and inParent1:
+        continue
+    elif  children[0].cells[i] == testGene2.cells[i]:
+        inParent1 = False
+    else:
+        if error == -1:
+            error = 0
+        if error == 0:
+            error = 1
+            break
+if error == 1:
+    print('- Function mateGenes() failed test 4. Mating error with child 1.')
+
+# check format of child 2
+inParent1 = True
+error = -1
+for i in range(0, len(children[1].cells)):
+    if children[1].cells[i] == testGene2.cells[i] and inParent1:
+        continue
+    elif  children[1].cells[i] == testGene.cells[i]:
+        inParent1 = False
+    else:
+        if error == -1:
+            error = 0
+        if error == 0:
+            error = 1
+            break
+
+if error == 1:
+    print('- Function mateGenes() failed test 4. Mating error with child 2.')
+
 
 ################################################################################
 #def mutateGene(self, index):
 ################################################################################
+numTests = 200
+mutated = False
+oldCells = testGene.cells.copy()
+for i in range(0, numTests + 1):
+    outputGene = testGene.mutateGene(testGene)
+    if not outputGene.cells == oldCells:
+        mutated = True
+        break
+
+if not mutated:
+    print('- Function mutateGene() failed test 1. No mutation occured in ', numTests,
+        ' rounds with ', testGene.chanceOfMutate, '% chance of mutation.')
+
 
 ################################################################################
 #def getCoords(index):
