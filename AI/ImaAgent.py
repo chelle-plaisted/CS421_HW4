@@ -421,12 +421,47 @@ class AIPlayer(Player):
         if self.gamesPlayed == self.gamesPerGene :
             # if that was the last gene, make a new generation
             if self.indexToEval == self.popSize - 1:
+                # # generation has ended print to evidence file
+                # bestIdx = self.getBestGene()
+                # state = self.buildState(bestIdx)
+                # with open("evidence.txt", "a") as textFile:
+                #     textFile.write("Best Gene Score {0}".format(self.currentFitness[bestIdx]))
+                #     textFile.write("{0}".format(asciiPrintState(state)))
+                # make new generation
                 self.indexToEval = 0
                 self.makeNextGen()
             else: # otherwise, move to next
                 self.indexToEval += 1
             # reset the number of games played
             self.gamesPlayed = 0
+
+    ##
+    # getBestGene
+    #
+    # Description: get the index of the best gene of the current generation
+    #
+    # Return: the index of the gene
+    ##
+    def getBestGene(self):
+        best = 0
+        for i in range(0, len(self.currentFitness)):
+            if self.currentFitness[i] > self.currentFitness[best] :
+                best = idea
+
+        return best
+
+    ##
+    # buildState
+    #
+    # Description: build the state corresponding to the gene specified by the given index
+    #
+    # Parameters:
+    #   -index : index of gene to build state for
+    #
+    # Return : state GameState object
+    def buildState(self, index):
+        pass
+
 
 ################################################################################
 #TODO COMPLETE
