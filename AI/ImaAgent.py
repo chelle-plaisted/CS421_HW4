@@ -1,4 +1,3 @@
-import random
 import sys
 sys.path.append("..")  #so other modules can be found in parent dir
 from Player import *
@@ -8,6 +7,7 @@ from Ant import UNIT_STATS
 from Move import Move
 from GameState import *
 from AIPlayerUtils import *
+import random
 
 ##
 ##
@@ -23,10 +23,13 @@ class Gene():
     # Description: Creates a new Gene
     ##
     def __init__(self, cells = None):
-        self.numCells = 80 # 40 for each owned half of the gameboard
+
+        # 40 for our side, 40 on enemy side
+        self.numCells = 80
+
         # Gene contents
         if cells == None:
-            self.cells = self.initializeGene()
+            self.initializeGene()
         else:
             self.cells = cells
 
@@ -36,7 +39,7 @@ class Gene():
     #   -populate all indicies with random number
     #   -indices 0-39 = AI player's side of board. On this half:
     #       -Top value: anthill location
-    #       =Next value: tunnel location
+    #       -Next value: tunnel location
     #       -Next 9 values: grass Locations
     #   -indices 40-79 = enemy player's side of board. On this half:
     #       -Top 2 values: enemy food Locations
@@ -59,7 +62,25 @@ class Gene():
     # a second where the first half comes from otherParent)
     ##
     def mateGenes(self, otherParent):
-        pass
+
+        #select crossover point
+        crossPoint = random.randint(0, self.numCells)
+
+        #generate first child gene
+        child1 = Gene()
+        for i in range(0,crossPoint):
+            child1.cells[i] = self.cells[i]
+        for i in range(crossPoint, self.numCells):
+            child1.cells[i] = otherParent.cells[i]
+
+        #generate second child gene
+        child2 = Gene()
+        for i in range(0,crossPoint):
+            child2.cells[i] = otherParent.cells[i]
+        for i in range(crossPoint, self.numCells):
+            child2.cells[i] = self.cells[i]
+
+        return child1, child2
 
     ##
     # mutateGene
@@ -105,11 +126,62 @@ class Gene():
     # Return: a list of coordinates representing either (anthill_location, tunnel_location,
     # 9 grqss locations) or (enemy food 1, enemy food 2)
     def getConstructions(self, phase):
+        #variables
         constructions = []
+        constructionIndices = []
+        count = 0
+
+        #setup phase 1: placing anthill, tunnel, grass
         if phase == SETUP_PHASE_1:
-            pass
+
+            #find 9 biggest number indices
+            while count < 9: 
+                greatestNum = -1
+                greatestNumIdx = 0
+                for i in range(0,40): #find 1 of the 9 highest numbers
+                    if i not in constructionIndices and self.cells[i] > greatestNum:
+                        greatestNum = self.cells[i]
+                        greatestNumIdx = i
+                constructionIndices.append(greatestNumIdx)
+                count = count + 1
+            
+            #convert indices to coords
+            for i in constructionIndices:
+                x = i % 10
+                y = (int)(i / 10)
+                constructions.append((x,y))
+            
+            #done
+            return constructions
+            
+        #setup phase 2: placing food on enemy side
         elif phase == SETUP_PHASE_2:
-            pass
+
+            #indices of locations we cannot place food in
+            #because Booger always places its constructs there
+            occupiedLocations = [49,58,59,64,67,68,69,76,77,78,79]
+
+            #find 2 biggest number indices
+            while count < 2:
+                greatestNum = -1
+                greatestNumIdx = 0
+                for i in range(40,80): #find 1 of the 2 highest numbers
+                    if i not in constructionIndices and i not in occupiedLocations and self.cells[i] > greatestNum:
+                        greatestNum = self.cells[i]
+                        greatestNumIdx = i
+                constructionIndices.append(greatestNumIdx)
+                count = count + 1
+
+            #convert indices to coords
+            for i in constructionIndices:
+                x = i % 10
+                y = (int)(i / 10)
+                constructions.append((x,y))
+
+            #done
+            return constructions
+
+
 
 ##
 #AIPlayer
@@ -281,6 +353,7 @@ class AIPlayer(Player):
 
         # return the selected parents
         parents = (self.currentPop[selected[0]], self.currentPop[selected[1]])
+        return parents
 
     ##
     #getMove
