@@ -218,8 +218,8 @@ class AIPlayer(Player):
     def __init__(self, inputPlayerId):
         super(AIPlayer,self).__init__(inputPlayerId, "Ima Agent")
         # general values to determine scope of algorithm
-        self.popSize = 10 #TODO: increase to min 1000
-        self.gamesPerGene = 10 #TODO increase to min 1000
+        self.popSize = 2 #TODO: increase to min 1000
+        self.gamesPerGene = 2 #TODO increase to min 1000
         # data to reprsent the current population & fitness
         self.currentPop = []
         self.currentFitness = []
@@ -421,12 +421,13 @@ class AIPlayer(Player):
         if self.gamesPlayed == self.gamesPerGene :
             # if that was the last gene, make a new generation
             if self.indexToEval == self.popSize - 1:
-                # # generation has ended print to evidence file
-                # bestIdx = self.getBestGene()
+                # generation has ended print to evidence file
+                bestIdx = self.getBestGene()
                 # state = self.buildState(bestIdx)
-                # with open("evidence.txt", "a") as textFile:
-                #     textFile.write("Best Gene Score {0}".format(self.currentFitness[bestIdx]))
+                with open("evidence.txt", "a") as textFile:
+                    textFile.write("Best Gene Score {0}".format(self.currentFitness[bestIdx]))
                 #     textFile.write("{0}".format(asciiPrintState(state)))
+                    textFile.write("---------------------------------------------------\n")
                 # make new generation
                 self.indexToEval = 0
                 self.makeNextGen()
