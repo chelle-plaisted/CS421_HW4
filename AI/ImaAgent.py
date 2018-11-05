@@ -131,34 +131,11 @@ class Gene():
             return -1
         # if in the second half of cells, add an offset to put the cell on the enemy side
         if index >= 40:
-            # TODO delete if unnecessary
-            # if index >= 49:
-            #     index += 1
-            #     if index >= 58:
-            #         index += 1
-            #         if index >= 59:
-            #             index += 1
-            #             if index >= 64:
-            #                 index += 1
-            #                 if index >= 67:
-            #                     index += 1
-            #                     if index >= 68:
-            #                         index += 1
-            #                         if index >= 69:
-            #                             index += 1
-            #                             if index >= 76:
-            #                                 index += 1
-            #                                 if index >= 77:
-            #                                     index += 1
-            #                                     if index >= 78:
-            #                                         index += 1
-            #                                         if index >= 79:
-            #                                             index += 1
             index += 20 # number of neutral cells
         # x location
         x = index % 10
         # y location
-        y = index / 10
+        y = int(index / 10)
 
         return (x,y)
 
@@ -181,6 +158,7 @@ class Gene():
 
         #setup phase 1: placing anthill, tunnel, grass
         if phase == SETUP_PHASE_1:
+            print('phase 1')
 
             #find 9 biggest number indices
             while count < 9:
@@ -195,16 +173,16 @@ class Gene():
 
             #convert indices to coords
             for i in constructionIndices:
-                x = i % 10
-                y = (int)(i / 10)
-                constructions.append((x,y))
+                coords = self.getCoords(i)
+                constructions.append(coords)
 
             #done
+            print('my stuff: ', constructions)
             return constructions
 
         #setup phase 2: placing food on enemy side
         elif phase == SETUP_PHASE_2:
-
+            print('phase 2')
             #indices of locations we cannot place food in
             #because Booger always places its constructs there
             occupiedLocations = [49,58,59,64,67,68,69,76,77,78,79]
@@ -222,11 +200,11 @@ class Gene():
 
             #convert indices to coords
             for i in constructionIndices:
-                x = i % 10
-                y = (int)(i / 10)
-                constructions.append((x,y))
+                coords = self.getCoords(i)
+                constructions.append(coords)
 
             #done
+            print('enemy food: ', constructions)
             return constructions
 
 
@@ -281,45 +259,45 @@ class AIPlayer(Player):
     ##
     def getPlacement(self, currentState):
         # TODO, remove code below once getConstructions is finished
-        # return self.currentPop[self.indexToEval].getConstructions(currentState.phase)
-        numToPlace = 0
-        #implemented by students to return their next move
-        if currentState.phase == SETUP_PHASE_1:    #stuff on my side
-            numToPlace = 11
-            moves = []
-            for i in range(0, numToPlace):
-                move = None
-                while move == None:
-                    #Choose any x location
-                    x = random.randint(0, 9)
-                    #Choose any y location on your side of the board
-                    y = random.randint(0, 3)
-                    #Set the move if this space is empty
-                    if currentState.board[x][y].constr == None and (x, y) not in moves:
-                        move = (x, y)
-                        #Just need to make the space non-empty. So I threw whatever I felt like in there.
-                        currentState.board[x][y].constr == True
-                moves.append(move)
-            return moves
-        elif currentState.phase == SETUP_PHASE_2:   #stuff on foe's side
-            numToPlace = 2
-            moves = []
-            for i in range(0, numToPlace):
-                move = None
-                while move == None:
-                    #Choose any x location
-                    x = random.randint(0, 9)
-                    #Choose any y location on enemy side of the board
-                    y = random.randint(6, 9)
-                    #Set the move if this space is empty
-                    if currentState.board[x][y].constr == None and (x, y) not in moves:
-                        move = (x, y)
-                        #Just need to make the space non-empty. So I threw whatever I felt like in there.
-                        currentState.board[x][y].constr == True
-                moves.append(move)
-            return moves
-        else:
-            return [(0, 0)]
+         return self.currentPop[self.indexToEval].getConstructions(currentState.phase)
+        # numToPlace = 0
+        # #implemented by students to return their next move
+        # if currentState.phase == SETUP_PHASE_1:    #stuff on my side
+        #     numToPlace = 11
+        #     moves = []
+        #     for i in range(0, numToPlace):
+        #         move = None
+        #         while move == None:
+        #             #Choose any x location
+        #             x = random.randint(0, 9)
+        #             #Choose any y location on your side of the board
+        #             y = random.randint(0, 3)
+        #             #Set the move if this space is empty
+        #             if currentState.board[x][y].constr == None and (x, y) not in moves:
+        #                 move = (x, y)
+        #                 #Just need to make the space non-empty. So I threw whatever I felt like in there.
+        #                 currentState.board[x][y].constr == True
+        #         moves.append(move)
+        #     return moves
+        # elif currentState.phase == SETUP_PHASE_2:   #stuff on foe's side
+        #     numToPlace = 2
+        #     moves = []
+        #     for i in range(0, numToPlace):
+        #         move = None
+        #         while move == None:
+        #             #Choose any x location
+        #             x = random.randint(0, 9)
+        #             #Choose any y location on enemy side of the board
+        #             y = random.randint(6, 9)
+        #             #Set the move if this space is empty
+        #             if currentState.board[x][y].constr == None and (x, y) not in moves:
+        #                 move = (x, y)
+        #                 #Just need to make the space non-empty. So I threw whatever I felt like in there.
+        #                 currentState.board[x][y].constr == True
+        #         moves.append(move)
+        #     return moves
+        # else:
+        #     return [(0, 0)]
 
     ##
     # initializePop
@@ -566,6 +544,46 @@ if not mutated:
 ################################################################################
 #def getCoords(index):
 ################################################################################
+testIdx1 = -1
+coords = testGene.getCoords(testIdx1)
+if not coords == -1:
+    print('- Function getCoords() failed test 1. Test index ', testIdx1, ' yielded coords ',
+        coords, '. Expected -1 as error.')
+testIdx2 = 90
+coords = testGene.getCoords(testIdx2)
+if not coords == -1:
+    print('- Function getCoords() failed test 2. Test index ', testIdx2, ' yielded coords ',
+        coords, '. Expected -1 as error.')
+testIdx3 = 0
+coords = testGene.getCoords(testIdx3)
+if not coords == (0,0):
+    print('- Function getCoords() failed test 3. Test index ', testIdx3, ' yielded coords ',
+        coords, '. Expected coords (0,0)')
+testIdx4 = 24
+coords = testGene.getCoords(testIdx4)
+if not coords == (4,2):
+    print('- Function getCoords() failed test 4. Test index ', testIdx4, ' yielded coords ',
+        coords, '. Expected coords (4,2)')
+testIdx5 = 40
+coords = testGene.getCoords(testIdx5)
+if not coords == (0,6):
+    print('- Function getCoords() failed test 5. Test index ', testIdx5, ' yielded coords ',
+        coords, '. Expected coords (0,6)')
+testIdx6 = 79
+coords = testGene.getCoords(testIdx6)
+if not coords == (9,9):
+    print('- Function getCoords() failed test 6. Test index ', testIdx6, ' yielded coords ',
+        coords, '. Expected coords (9,9)')
+testIdx7 = 58
+coords = testGene.getCoords(testIdx7)
+if not coords == (8,7):
+    print('- Function getCoords() failed test 7. Test index ', testIdx7, ' yielded coords ',
+        coords, '. Expected coords (8,7)')
+testIdx8 = 65
+coords = testGene.getCoords(testIdx8)
+if not coords == (5,8):
+    print('- Function getCoords() failed test 8. Test index ', testIdx8, ' yielded coords ',
+        coords, '. Expected coords (5,8)')
 
 ################################################################################
 #def getConstructions(self, phase):
