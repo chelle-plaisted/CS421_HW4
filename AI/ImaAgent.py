@@ -218,8 +218,8 @@ class AIPlayer(Player):
     def __init__(self, inputPlayerId):
         super(AIPlayer,self).__init__(inputPlayerId, "Ima Agent")
         # general values to determine scope of algorithm
-        self.popSize = 2 #TODO: increase to min 1000
-        self.gamesPerGene = 2 #TODO increase to min 1000
+        self.popSize = 10 #TODO: increase to min 1000
+        self.gamesPerGene = 15 #TODO increase to min 1000
         # data to reprsent the current population & fitness
         self.currentPop = []
         self.currentFitness = []
@@ -447,7 +447,7 @@ class AIPlayer(Player):
         best = 0
         for i in range(0, len(self.currentFitness)):
             if self.currentFitness[i] > self.currentFitness[best] :
-                best = idea
+                best = i
 
         return best
 
