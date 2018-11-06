@@ -334,6 +334,9 @@ class AIPlayer(Player):
         # retire current population by resetting it as the new generation
         self.currentPop = nextGen
 
+        # reset all fitness values
+        self.currentFitness = [self.defaultFitness] * self.popSize
+
     ## TODO EDIT: do we want any tweaks, prune bottom 10% of population,
     # allow parent to 'self mate' and continue on a supposedly goot gene set....
     # selectParents
