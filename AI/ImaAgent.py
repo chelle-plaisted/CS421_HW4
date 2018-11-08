@@ -79,20 +79,7 @@ class Gene():
         cells += otherParent.cells[crossPoint:]
         child1 = Gene(cells)
 
-
-
-        # for i in range(0,crossPoint):
-        #     child1.cells[i] = self.cells[i]
-        # for i in range(crossPoint, self.numCells):
-        #     child1.cells[i] = otherParent.cells[i]
-
         #generate second child gene
-        # child2 = Gene()
-        # for i in range(0,crossPoint):
-        #     child2.cells[i] = otherParent.cells[i]
-        # for i in range(crossPoint, self.numCells):
-        #     child2.cells[i] = self.cells[i]
-
         cells = []
         cells += otherParent.cells[0:crossPoint]
         cells += self.cells[crossPoint:]
@@ -117,7 +104,6 @@ class Gene():
             # mutate the gene
             idxToMutate = random.randint(0, self.numCells-1)
             val = random.randint(0, 2**31 -1)
-            # print('mutating: ', gene.cells[idxToMutate], ' to ', val)
             gene.cells[idxToMutate] = val
 
         return gene
@@ -178,7 +164,6 @@ class Gene():
 
         #setup phase 2: placing food on enemy side
         elif phase == SETUP_PHASE_2:
-            # print('phase 2')
             #indices of locations we cannot place food in
             #because Booger always places its constructs there
             occupiedLocations = [49,58,59,64,67,68,69,76,77,78,79]
@@ -212,39 +197,39 @@ class Gene():
     #
     ##
     def buildGeneState(self):
-        self.geneState = GameState.getBlankState
-        asciiPrintState(self.geneState)
+        self.geneState = GameState.getBlankState()
         # build phase 1
         constructions = self.getConstructions(SETUP_PHASE_1)
         hill = Building(constructions[0], ANTHILL, 0)
-        self.geneState.board[hill.coords.x][hill.coords.y].constr = hill
+        self.geneState.board[hill.coords[0]][hill.coords[1]].constr = hill
         tunnel = Building(constructions[1], TUNNEL, 0)
-        self.geneState.board[tunnel.coords.x][tunnel.coords.y].constr = tunnel
+        self.geneState.board[tunnel.coords[0]][tunnel.coords[1]].constr = tunnel
         grass = []
         for i in range(0,9):
-            grass[i] = Building(constructions[i+2], GRASS, 0)
-            self.geneState.board[grass[i].coords.x][grass[i].coords.y].constr = grass[i]
+            grass.append(Building(constructions[i+2], GRASS, 0))
+            self.geneState.board[grass[i].coords[0]][grass[i].coords[1]].constr = grass[i]
 
         # build phase 2
         constructions = self.getConstructions(SETUP_PHASE_2)
         food1 = Building(constructions[0], FOOD, 0)
-        self.geneState.board[food1.coords.x][food1.coords.y].constr = food1
+        self.geneState.board[food1.coords[0]][food1.coords[1]].constr = food1
         food2 = Building(constructions[1], FOOD, 0)
-        self.geneState.board[food2.coords.x][food2.coords.y].constr = food2
+        self.geneState.board[food2.coords[0]][food2.coords[1]].constr = food2
 
         #add Booger's set locations
         constructions = [(9,9), (4, 8),
                 (9,6), (8,7), (7,8), (6,9), \
                 (9,7), (8,8), (7,9), \
                 (9,8), (8,9) ]
-        hill = Building(self.getCoords(constructions[0]), ANTHILL, 0)
-        self.geneState.board[hill.coords.x][hill.coords.y].constr = hill
-        tunnel = Building(self.getCoords(constructions[1]), TUNNEL, 0)
-        self.geneState.board[tunnel.coords.x][tunnel.coords.y].constr = tunnel
+        hill = Building(constructions[0], ANTHILL, 0)
+        self.geneState.board[hill.coords[0]][hill.coords[1]].constr = hill
+        tunnel = Building(constructions[1], TUNNEL, 0)
+        self.geneState.board[tunnel.coords[0]][tunnel.coords[1]].constr = tunnel
         grass = []
         for i in range(0,9):
-            grass[i] = Building(self.getCoords(constructions[i+2]), GRASS, 0)
-            self.geneState.board[grass[i].coords.x][grass[i].coords.y].constr = grass[i]
+            grass.append(Building(constructions[i+2], GRASS, 0))
+            self.geneState.board[grass[i].coords[0]][grass[i].coords[1]].constr = grass[i]
+
 
 
 ##
@@ -268,10 +253,7 @@ class AIPlayer(Player):
     def __init__(self, inputPlayerId):
         super(AIPlayer,self).__init__(inputPlayerId, "Ima Agent")
 
-        #redirect prints to file
-        # sys.stdout = open("evidence.txt","a")
-
-        # general values to determine scope of algorithm
+         # general values to determine scope of algorithm
         self.popSize = 2
         self.gamesPerGene = 2
         # data to reprsent the current population & fitness
@@ -300,6 +282,7 @@ class AIPlayer(Player):
     #Return: The coordinates of where the construction is to be placed
     ##
     def getPlacement(self, currentState):
+        #redirect prints to file
         sys.stdout = open("evidence.txt","a")
         return self.currentPop[self.indexToEval].getConstructions(currentState.phase)
 
@@ -441,13 +424,14 @@ class AIPlayer(Player):
             # if that was the last gene, make a new generation
             if self.indexToEval == self.popSize - 1:
                 # generation has ended print to evidence file
-                bestGene = self.currentPop[self.getBestGene()]
+                bestIdx = self.getBestGene()
+                bestGene = self.currentPop[bestIdx]
+                # print(bestGene.cells)
                 bestGene.buildGeneState()
                 state = bestGene.geneState
-                with open("evidence.txt", "a") as textFile:
-                    textFile.write("Best Gene Score {0}".format(self.currentFitness[bestIdx]))
-                    asciiPrintState(state)
-                    textFile.write("---------------------------------------------------\n")
+                print("Best Gene Score = ", self.currentFitness[bestIdx])
+                asciiPrintState(state)
+                print("---------------------------------------------------\n")
                 # make new generation
                 self.indexToEval = 0
                 self.makeNextGen()
