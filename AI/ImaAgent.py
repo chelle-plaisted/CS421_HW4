@@ -55,7 +55,7 @@ class Gene():
         for i in range (0, self.numCells):
             self.cells += [random.randint(0, 2**31 -1)]
 
-    ## TODO COMPLETE
+    ##
     # mateGenes
     #
     # Description: make the current gene with another parent gene by selecting
@@ -66,16 +66,16 @@ class Gene():
     #   otherParent: other parent Gene to mate with
     #
     # Return: 2 child Genes (1 where the first half comes from current gene, and
-    # a second where the first half comes from otherParent)
+    # a second where the first half comes from otherParent) and the crossover point (for testing)
     ## TODO remove unecessary code
     def mateGenes(self, otherParent):
 
         #select crossover point
-        crossPoint = random.randint(0, self.numCells)
+        crossPoint = random.randint(0, self.numCells) # includes self.numCells
 
         #generate first child gene
         cells = []
-        cells += self.cells[0:crossPoint]
+        cells += self.cells[0:crossPoint] # does not include crossPoint
         cells += otherParent.cells[crossPoint:]
         child1 = Gene(cells)
 
@@ -85,7 +85,7 @@ class Gene():
         cells += self.cells[crossPoint:]
         child2 = Gene(cells)
 
-        return (self.mutateGene(child1), self.mutateGene(child2))
+        return (self.mutateGene(child1), self.mutateGene(child2), crossPoint)
 
     ##
     # mutate
@@ -116,7 +116,7 @@ class Gene():
     # Return: a tuple representing a location on the gameboard or -1 for error
     def getCoords(self, index):
         # error check
-        if index < 0 or index > self.numCells -1:
+        if index < 0 or index > self.numCells - 1:
             return -1
         # if in the second half of cells, add an offset to put the cell on the enemy side
         if index >= 40:
@@ -155,7 +155,7 @@ class Gene():
             while count < 11:
                 greatestNum = -1
                 greatestNumIdx = 0
-                for i in range(0,40): #find 1 of the 11 highest numbers
+                for i in range(0,40): # find 1 of the 11 highest numbers
                     if i not in constructionIndices and self.cells[i] > greatestNum:
                         greatestNum = self.cells[i]
                         greatestNumIdx = i
@@ -212,8 +212,8 @@ class Gene():
 
         # build phase 2
         constructions = self.getConstructions(SETUP_PHASE_2)
-        food1 = Building(constructions[0], FOOD, 0)
-        food2 = Building(constructions[1], FOOD, 0)
+        food1 = Building(constructions[0], FOOD, 1)
+        food2 = Building(constructions[1], FOOD, 1)
         self.geneState.inventories[2].constrs.append(food1)
         self.geneState.inventories[2].constrs.append(food2)
 
@@ -222,13 +222,13 @@ class Gene():
                 (9,6), (8,7), (7,8), (6,9), \
                 (9,7), (8,8), (7,9), \
                 (9,8), (8,9) ]
-        hill = Building(constructions[0], ANTHILL, 0)
+        hill = Building(constructions[0], ANTHILL, 1)
         self.geneState.inventories[1].constrs.append(hill)
-        tunnel = Building(constructions[1], TUNNEL, 0)
+        tunnel = Building(constructions[1], TUNNEL, 1)
         self.geneState.inventories[1].constrs.append(tunnel)
         grass = []
         for i in range(0,9):
-            grass.append(Building(constructions[i+2], GRASS, 0))
+            grass.append(Building(constructions[i+2], GRASS, 1))
             self.geneState.inventories[2].constrs.append(grass[i])
 
 
@@ -255,17 +255,19 @@ class AIPlayer(Player):
         super(AIPlayer,self).__init__(inputPlayerId, "Ima Agent")
 
          # general values to determine scope of algorithm
-        self.popSize = 2
+        self.popSize = 250
         self.gamesPerGene = 2
         # data to reprsent the current population & fitness
         self.currentPop = []
         self.currentFitness = []
-        self.defaultFitness = 0
+        self.defaultFitness = self.gamesPerGene # to avoid negative fitness values that will
+        # mess up parent selection
         self.initializePop()
         # the current index of genes to evaluate
         self.indexToEval = 0
         # how many games have been played for the gene currently being evalutated
         self.gamesPlayed = 0
+        self.file = None
 
     ##
     #getPlacement
@@ -284,7 +286,8 @@ class AIPlayer(Player):
     ##
     def getPlacement(self, currentState):
         #redirect prints to file
-        sys.stdout = open("evidence.txt","a")
+        self.file = open("evidence.txt","a")
+        sys.stdout = self.file
         return self.currentPop[self.indexToEval].getConstructions(currentState.phase)
 
     ##
@@ -312,7 +315,8 @@ class AIPlayer(Player):
     # Return: list of 2 children
     ##
     def generateChildren(self, parents):
-        return parents[0].mateGenes(parents[1])
+        rtnVal = parents[0].mateGenes(parents[1])
+        return [rtnVal[0], rtnVal[1]] # crossPoint only needed for testing
 
     ##
     # makeNextGen
@@ -355,7 +359,7 @@ class AIPlayer(Player):
         # continue selection until 2 valid parents are generated
         selected = []
         while len(selected) < 2:
-            # generate random value
+            # generate random value * sum
             val = random.random() * sum
             # select using random value
             chosen = -1
@@ -421,11 +425,11 @@ class AIPlayer(Player):
             self.currentFitness[self.indexToEval] -= 1
 
         # if done with current gene, advance to next
-        if self.gamesPlayed == self.gamesPerGene :
+        if self.gamesPlayed == self.gamesPerGene:
+            # reset the number of games played
+            self.gamesPlayed = 0
             # if that was the last gene, make a new generation
-            print('test 1: ', self.indexToEval)
             if self.indexToEval == self.popSize - 1:
-                print('test 2')
                 # generation has ended print to evidence file
                 bestIdx = self.getBestGene()
                 bestGene = self.currentPop[bestIdx]
@@ -434,13 +438,14 @@ class AIPlayer(Player):
                 print("Best Gene Score = ", self.currentFitness[bestIdx])
                 asciiPrintState(state)
                 print("=========================================================")
+
                 # make new generation
                 self.indexToEval = 0
                 self.makeNextGen()
             else: # otherwise, move to next
                 self.indexToEval += 1
-            # reset the number of games played
-            self.gamesPlayed = 0
+
+        self.file.close()
 
     ##
     # getBestGene
@@ -451,7 +456,7 @@ class AIPlayer(Player):
     ##
     def getBestGene(self):
         best = 0
-        for i in range(0, len(self.currentFitness)):
+        for i in range(1, len(self.currentFitness)):
             if self.currentFitness[i] > self.currentFitness[best] :
                 best = i
             elif self.currentFitness[i] == self.currentFitness[best] :
@@ -497,7 +502,9 @@ if not count == testGene.numCells:
 # make a second gene
 testGene2 = Gene()
 
-children = testGene.mateGenes(testGene2)
+rtnVal = testGene.mateGenes(testGene2)
+children = rtnVal[0:2]
+cross = rtnVal[2]
 
 # check number of children
 if not len(children) == 2:
@@ -509,40 +516,40 @@ if not len(children[0].cells) == testGene.numCells:
 if not len(children[1].cells) == testGene.numCells:
     print('- Function mateGenes() failed test 3. Child 2 wrong length: ', len(children[1].cells))
 
+# check the cross point
+if not cross >= 0 and cross <= testGene.numCells:
+    print('- Function mateGenes() failed test 6. Invalid crossover point: ', cross)
+
 # check format of child 1
-inParent1 = True
-error = -1
+differentIndices = []
 for i in range(0, len(children[0].cells)):
-    if children[0].cells[i] == testGene.cells[i] and inParent1:
+    if i < cross and children[0].cells[i] == testGene.cells[i]:
         continue
-    elif  children[0].cells[i] == testGene2.cells[i]:
-        inParent1 = False
+    elif  i >= cross and children[0].cells[i] == testGene2.cells[i]:
+        continue
     else:
-        if error == -1:
-            error = 0
-        if error == 0:
-            error = 1
-            break
-if error == 1:
-    print('- Function mateGenes() failed test 4. Mating error with child 1.')
+        differentIndices.append(i)
+if len(differentIndices) > 1: # 1 mutation allowed
+    print('- Function mateGenes() failed test 4. Mating error with child 1. Cross: ', cross)
+    for index in differentIndices:
+        print('Index: ', index, ' child: ', children[0].cells[index], '; Parent 1: ',
+        testGene.cells[index], '; Parent 2: ', testGene2.cells[index])
 
 # check format of child 2
-inParent1 = True
-error = -1
+differentIndices = []
 for i in range(0, len(children[1].cells)):
-    if children[1].cells[i] == testGene2.cells[i] and inParent1:
+    if i < cross and children[1].cells[i] == testGene2.cells[i]:
         continue
-    elif  children[1].cells[i] == testGene.cells[i]:
-        inParent1 = False
+    elif i >= cross and children[1].cells[i] == testGene.cells[i]:
+        continue
     else:
-        if error == -1:
-            error = 0
-        if error == 0:
-            error = 1
-            break
+        differentIndices.append(i)
 
-if error == 1:
-    print('- Function mateGenes() failed test 4. Mating error with child 2.')
+if len(differentIndices) > 1: # 1 mutation allowed
+    print('- Function mateGenes() failed test 5. Mating error with child 2. Cross: ', cross)
+    for index in differentIndices:
+        print('Index: ', index, ' child: ', children[1].cells[index], '; Parent 1: ',
+        testGene2.cells[index], '; Parent 2: ', testGene.cells[index])
 
 
 ################################################################################
