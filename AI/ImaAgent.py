@@ -8,7 +8,7 @@ from Move import Move
 from GameState import *
 from AIPlayerUtils import *
 import random
-
+from time import time
 ##
 ##
 # Gene class
@@ -255,12 +255,12 @@ class AIPlayer(Player):
         super(AIPlayer,self).__init__(inputPlayerId, "Ima Agent")
 
          # general values to determine scope of algorithm
-        self.popSize = 250
+        self.popSize = 10
         self.gamesPerGene = 10
         # data to reprsent the current population & fitness
         self.currentPop = []
         self.currentFitness = []
-        self.defaultFitness = self.gamesPerGene # to avoid negative fitness values that will
+        self.defaultFitness = 2 * self.gamesPerGene # to avoid negative fitness values that will
         # mess up parent selection
         self.initializePop()
         # the current index of genes to evaluate
@@ -287,7 +287,7 @@ class AIPlayer(Player):
     def getPlacement(self, currentState):
         #redirect prints to file
         self.file = open("evidence1.txt","a")
-        sys.stdout = self.file
+        #sys.stdout = self.file
         return self.currentPop[self.indexToEval].getConstructions(currentState.phase)
 
     ##
@@ -324,22 +324,33 @@ class AIPlayer(Player):
     #
     ##
     def makeNextGen(self):
+        print('started make next gen')
+        t0 = time()
         nextGen = []
         # until my next generation is full, keep selecting parents, mating them,
         # and adding the children to the next generation
         while len(nextGen) < self.popSize:
             # select parents
+            t0 = time()
             parents = self.selectParents()
+            t1 = time()
+            print('parent selection: ', t1 - t0)
             # mate parents
             children = self.generateChildren(parents)
+            t2 = time()
             # add chldren to next generation
             nextGen += children
+
+            print('child generation: ', t2-t1)
+
 
         # retire current population by resetting it as the new generation
         self.currentPop = nextGen
 
         # reset all fitness values
         self.currentFitness = [self.defaultFitness] * self.popSize
+        t4 = time()
+        print('total makeNextGen: ', t4 - t0)
 
     ## TODO EDIT: do we want any tweaks, prune bottom 10% of population,
     # allow parent to 'self mate' and continue on a supposedly goot gene set....
@@ -352,13 +363,19 @@ class AIPlayer(Player):
     ##
     def selectParents(self):
         # get sum of fitnesses
+        print('started parent selection')
         sum = 0
+        t0 = time()
         for score in self.currentFitness:
             sum += score
-
+        t1 = time()
+        # print('parent sum: ', t1-t0)
         # continue selection until 2 valid parents are generated
         selected = []
+        count = 0
         while len(selected) < 2:
+            # print('looping for parent')
+            count = count + 1
             # generate random value * sum
             val = random.random() * sum
             # select using random value
@@ -371,9 +388,14 @@ class AIPlayer(Player):
             # don't choose the same parent twice
             if not chosen in selected:
                 selected.append(chosen)
+            # print('selected 1 parent')
 
         # return the selected parents
+
         parents = (self.currentPop[selected[0]], self.currentPop[selected[1]])
+        if(parents[1].cells == parents[0].cells):
+            print('same parent')
+        print('number of loops: ', count)
         return parents
 
     ##
@@ -421,8 +443,10 @@ class AIPlayer(Player):
         # update fitness
         if hasWon:
             self.currentFitness[self.indexToEval] += 1
+            print('won: ', self.currentFitness[self.indexToEval])
         else:
             self.currentFitness[self.indexToEval] -= 1
+            print('lost: ', self.currentFitness[self.indexToEval])
 
         # if done with current gene, advance to next
         if self.gamesPlayed == self.gamesPerGene:
@@ -431,6 +455,8 @@ class AIPlayer(Player):
             # if that was the last gene, make a new generation
             if self.indexToEval == self.popSize - 1:
                 # generation has ended print to evidence file
+                t0 = time()
+
                 bestIdx = self.getBestGene()
                 bestGene = self.currentPop[bestIdx]
                 bestGene.buildGeneState()
@@ -439,9 +465,16 @@ class AIPlayer(Player):
                 asciiPrintState(state)
                 print("=========================================================")
 
+                t1 = time()
+
                 # make new generation
                 self.indexToEval = 0
                 self.makeNextGen()
+
+                t2 = time()
+
+
+
             else: # otherwise, move to next
                 self.indexToEval += 1
 
