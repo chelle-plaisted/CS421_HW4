@@ -212,8 +212,8 @@ class Gene():
 
         # build phase 2
         constructions = self.getConstructions(SETUP_PHASE_2)
-        food1 = Building(constructions[0], FOOD, 1)
-        food2 = Building(constructions[1], FOOD, 1)
+        food1 = Building(constructions[0], FOOD, 0)
+        food2 = Building(constructions[1], FOOD, 0)
         self.geneState.inventories[2].constrs.append(food1)
         self.geneState.inventories[2].constrs.append(food2)
 
@@ -222,9 +222,9 @@ class Gene():
                 (9,6), (8,7), (7,8), (6,9), \
                 (9,7), (8,8), (7,9), \
                 (9,8), (8,9) ]
-        hill = Building(constructions[0], ANTHILL, 1)
+        hill = Building(constructions[0], ANTHILL, 0)
         self.geneState.inventories[1].constrs.append(hill)
-        tunnel = Building(constructions[1], TUNNEL, 1)
+        tunnel = Building(constructions[1], TUNNEL, 0)
         self.geneState.inventories[1].constrs.append(tunnel)
         grass = []
         for i in range(0,9):
@@ -256,7 +256,7 @@ class AIPlayer(Player):
 
          # general values to determine scope of algorithm
         self.popSize = 250
-        self.gamesPerGene = 2
+        self.gamesPerGene = 10
         # data to reprsent the current population & fitness
         self.currentPop = []
         self.currentFitness = []
@@ -286,7 +286,7 @@ class AIPlayer(Player):
     ##
     def getPlacement(self, currentState):
         #redirect prints to file
-        self.file = open("evidence.txt","a")
+        self.file = open("evidence1.txt","a")
         sys.stdout = self.file
         return self.currentPop[self.indexToEval].getConstructions(currentState.phase)
 
