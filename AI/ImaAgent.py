@@ -30,7 +30,7 @@ class Gene():
         self.chanceOfMutate = 0.05
 
         #state represented by gene
-        self.geneState = GameState.getBlankState
+        self.geneState = None
 
         # Gene contents
         if cells == None:
@@ -142,18 +142,21 @@ class Gene():
 
         return (x,y)
 
-    ## TODO COMPLETE
+    ##
     # getConstructions
     #
     # Description: get the Constructions needed for a given phase of the game as
     # defined by the structure of the current gene.  Also sets up geneState, a
     # game state representing this gene.
+    # Array order SETUP_PHASE_1: [AntHill, Tunnel, Grasses 1-9] length 11
+    # Array order SETUP_PHASE_2: [Enemy food 1, Enemy food 2] length 2
     #
     # Parameters:
     #   phase: SETUP_PHASE_1 (get objects on this AI's side of board, indices 0-39)
     #          SETUP_PHASE_2 (get objects on enemy's side of board, indices 40-79)
     # Return: a list of coordinates representing either (anthill_location, tunnel_location,
     # 9 grqss locations) or (enemy food 1, enemy food 2)
+    ##
     def getConstructions(self, phase):
         #variables
         constructions = []
@@ -174,14 +177,14 @@ class Gene():
                 count = count + 1
 
             #get constructions from greatest indices
-            hill = Building(self.getCoords(constructionIndices[0]), ANTHILL, 0)
-            self.geneState.board[hill.coords.x][hill.coords.y].constr = hill
-            tunnel = Building(self.getCoords(constructionIndices[1]), TUNNEL, 0)
-            self.geneState.board[tunnel.coords.x][tunnel.coords.y].constr = tunnel
-            grass = []
-            for i in range(0,9):
-                grass[i] = Building(self.getCoords(constructionIndices[i+2]), GRASS, 0)
-                self.geneState.board[grass[i].coords.x][grass[i].coords.y].constr = grass[i]
+            # hill = Building(self.getCoords(constructionIndices[0]), ANTHILL, 0)
+            # self.geneState.board[hill.coords.x][hill.coords.y].constr = hill
+            # tunnel = Building(self.getCoords(constructionIndices[1]), TUNNEL, 0)
+            # self.geneState.board[tunnel.coords.x][tunnel.coords.y].constr = tunnel
+            # grass = []
+            # for i in range(0,9):
+            #     grass[i] = Building(self.getCoords(constructionIndices[i+2]), GRASS, 0)
+            #     self.geneState.board[grass[i].coords.x][grass[i].coords.y].constr = grass[i]
 
         #setup phase 2: placing food on enemy side
         elif phase == SETUP_PHASE_2:
@@ -202,10 +205,10 @@ class Gene():
                 count = count + 1
 
             #get constructions from greatest indices
-            food1 = Building(self.getCoords(constructionIndices[0]), FOOD, 0)
-            self.geneState.board[food1.coords.x][food1.coords.y].constr = food1
-            food2 = Building(self.getCoords(constructionIndices[1]), FOOD, 0)
-            self.geneState.board[food2.coords.x][food2.coords.y].constr = food2
+            # food1 = Building(self.getCoords(constructionIndices[0]), FOOD, 0)
+            # self.geneState.board[food1.coords.x][food1.coords.y].constr = food1
+            # food2 = Building(self.getCoords(constructionIndices[1]), FOOD, 0)
+            # self.geneState.board[food2.coords.x][food2.coords.y].constr = food2
 
         #convert indices to coords
         for i in constructionIndices:
@@ -214,6 +217,42 @@ class Gene():
 
         #done
         return constructions
+
+    ##
+    # buildGeneState
+    #
+    # Description: get the Constructions needed for a given phase of the game as
+    # defined by the structure of the current gene.  Also sets up geneState, a
+    # game state representing this gene.
+    # Array order SETUP_PHASE_1: [AntHill, Tunnel, Grasses 1-9] length 11
+    # Array order SETUP_PHASE_2: [Enemy food 1, Enemy food 2] length 2
+    #
+    # Parameters:
+    #   phase: SETUP_PHASE_1 (get objects on this AI's side of board, indices 0-39)
+    #          SETUP_PHASE_2 (get objects on enemy's side of board, indices 40-79)
+    # Return: a list of coordinates representing either (anthill_location, tunnel_location,
+    # 9 grqss locations) or (enemy food 1, enemy food 2)
+    ##
+    def buildGeneState(self):
+        self.geneState = GameState.getBlankState
+        # build phase 1
+        constructions = self.getConstructions(SETUP_PHASE_1)
+        hill = Building(self.getCoords(constructions[0]), ANTHILL, 0)
+        self.geneState.board[hill.coords.x][hill.coords.y].constr = hill
+        tunnel = Building(self.getCoords(constructions[1]), TUNNEL, 0)
+        self.geneState.board[tunnel.coords.x][tunnel.coords.y].constr = tunnel
+        grass = []
+        for i in range(0,9):
+            grass[i] = Building(self.getCoords(constructions[i+2]), GRASS, 0)
+            self.geneState.board[grass[i].coords.x][grass[i].coords.y].constr = grass[i]
+
+        # build phase 2
+        constructions = self.getConstructions(SETUP_PHASE_2)
+        food1 = Building(self.getCoords(constructions[0]), FOOD, 0)
+        self.geneState.board[food1.coords.x][food1.coords.y].constr = food1
+        food2 = Building(self.getCoords(constructions[1]), FOOD, 0)
+        self.geneState.board[food2.coords.x][food2.coords.y].constr = food2
+
 
 
 
@@ -239,7 +278,7 @@ class AIPlayer(Player):
         super(AIPlayer,self).__init__(inputPlayerId, "Ima Agent")
 
         #redirect prints to file
-        sys.stdout = open("evidence.txt","w")
+        sys.stdout = open("evidence.txt","a")
 
         # general values to determine scope of algorithm
         self.popSize = 100 #TODO: increase to min 1000
@@ -451,8 +490,6 @@ class AIPlayer(Player):
     # Return : state GameState object
     def buildState(self, index):
         pass
-
-    def writeState(self):
 
 
 
