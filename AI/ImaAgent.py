@@ -176,16 +176,6 @@ class Gene():
                 constructionIndices.append(greatestNumIdx)
                 count = count + 1
 
-            #get constructions from greatest indices
-            # hill = Building(self.getCoords(constructionIndices[0]), ANTHILL, 0)
-            # self.geneState.board[hill.coords.x][hill.coords.y].constr = hill
-            # tunnel = Building(self.getCoords(constructionIndices[1]), TUNNEL, 0)
-            # self.geneState.board[tunnel.coords.x][tunnel.coords.y].constr = tunnel
-            # grass = []
-            # for i in range(0,9):
-            #     grass[i] = Building(self.getCoords(constructionIndices[i+2]), GRASS, 0)
-            #     self.geneState.board[grass[i].coords.x][grass[i].coords.y].constr = grass[i]
-
         #setup phase 2: placing food on enemy side
         elif phase == SETUP_PHASE_2:
             # print('phase 2')
@@ -204,12 +194,6 @@ class Gene():
                 constructionIndices.append(greatestNumIdx)
                 count = count + 1
 
-            #get constructions from greatest indices
-            # food1 = Building(self.getCoords(constructionIndices[0]), FOOD, 0)
-            # self.geneState.board[food1.coords.x][food1.coords.y].constr = food1
-            # food2 = Building(self.getCoords(constructionIndices[1]), FOOD, 0)
-            # self.geneState.board[food2.coords.x][food2.coords.y].constr = food2
-
         #convert indices to coords
         for i in constructionIndices:
             coords = self.getCoords(i)
@@ -221,22 +205,38 @@ class Gene():
     ##
     # buildGeneState
     #
-    # Description: get the Constructions needed for a given phase of the game as
-    # defined by the structure of the current gene.  Also sets up geneState, a
-    # game state representing this gene.
-    # Array order SETUP_PHASE_1: [AntHill, Tunnel, Grasses 1-9] length 11
-    # Array order SETUP_PHASE_2: [Enemy food 1, Enemy food 2] length 2
+    # Description: build a state corresponding to current gene based on the cell
+    # values of the gene and the oritentation of the enemy (Booger's) constructions
+    # Note: state does NOT include placement of ImaAgent food or ant placement, because
+    # these do not impact the placement decision.
     #
-    # Parameters:
-    #   phase: SETUP_PHASE_1 (get objects on this AI's side of board, indices 0-39)
-    #          SETUP_PHASE_2 (get objects on enemy's side of board, indices 40-79)
-    # Return: a list of coordinates representing either (anthill_location, tunnel_location,
-    # 9 grqss locations) or (enemy food 1, enemy food 2)
     ##
     def buildGeneState(self):
         self.geneState = GameState.getBlankState
+        asciiPrintState(self.geneState)
         # build phase 1
         constructions = self.getConstructions(SETUP_PHASE_1)
+        hill = Building(constructions[0], ANTHILL, 0)
+        self.geneState.board[hill.coords.x][hill.coords.y].constr = hill
+        tunnel = Building(constructions[1], TUNNEL, 0)
+        self.geneState.board[tunnel.coords.x][tunnel.coords.y].constr = tunnel
+        grass = []
+        for i in range(0,9):
+            grass[i] = Building(constructions[i+2], GRASS, 0)
+            self.geneState.board[grass[i].coords.x][grass[i].coords.y].constr = grass[i]
+
+        # build phase 2
+        constructions = self.getConstructions(SETUP_PHASE_2)
+        food1 = Building(constructions[0], FOOD, 0)
+        self.geneState.board[food1.coords.x][food1.coords.y].constr = food1
+        food2 = Building(constructions[1], FOOD, 0)
+        self.geneState.board[food2.coords.x][food2.coords.y].constr = food2
+
+        #add Booger's set locations
+        constructions = [(9,9), (4, 8),
+                (9,6), (8,7), (7,8), (6,9), \
+                (9,7), (8,8), (7,9), \
+                (9,8), (8,9) ]
         hill = Building(self.getCoords(constructions[0]), ANTHILL, 0)
         self.geneState.board[hill.coords.x][hill.coords.y].constr = hill
         tunnel = Building(self.getCoords(constructions[1]), TUNNEL, 0)
@@ -245,15 +245,6 @@ class Gene():
         for i in range(0,9):
             grass[i] = Building(self.getCoords(constructions[i+2]), GRASS, 0)
             self.geneState.board[grass[i].coords.x][grass[i].coords.y].constr = grass[i]
-
-        # build phase 2
-        constructions = self.getConstructions(SETUP_PHASE_2)
-        food1 = Building(self.getCoords(constructions[0]), FOOD, 0)
-        self.geneState.board[food1.coords.x][food1.coords.y].constr = food1
-        food2 = Building(self.getCoords(constructions[1]), FOOD, 0)
-        self.geneState.board[food2.coords.x][food2.coords.y].constr = food2
-
-
 
 
 ##
@@ -278,11 +269,11 @@ class AIPlayer(Player):
         super(AIPlayer,self).__init__(inputPlayerId, "Ima Agent")
 
         #redirect prints to file
-        sys.stdout = open("evidence.txt","a")
+        # sys.stdout = open("evidence.txt","a")
 
         # general values to determine scope of algorithm
-        self.popSize = 100 #TODO: increase to min 1000
-        self.gamesPerGene = 150 #TODO increase to min 1000
+        self.popSize = 2
+        self.gamesPerGene = 2
         # data to reprsent the current population & fitness
         self.currentPop = []
         self.currentFitness = []
@@ -309,7 +300,7 @@ class AIPlayer(Player):
     #Return: The coordinates of where the construction is to be placed
     ##
     def getPlacement(self, currentState):
-        # TODO, remove code below once getConstructions is finished
+        sys.stdout = open("evidence.txt","a")
         return self.currentPop[self.indexToEval].getConstructions(currentState.phase)
 
     ##
@@ -450,11 +441,12 @@ class AIPlayer(Player):
             # if that was the last gene, make a new generation
             if self.indexToEval == self.popSize - 1:
                 # generation has ended print to evidence file
-                bestIdx = self.getBestGene()
-                # state = self.buildState(bestIdx)
+                bestGene = self.currentPop[self.getBestGene()]
+                bestGene.buildGeneState()
+                state = bestGene.geneState
                 with open("evidence.txt", "a") as textFile:
                     textFile.write("Best Gene Score {0}".format(self.currentFitness[bestIdx]))
-                #     textFile.write("{0}".format(asciiPrintState(state)))
+                    asciiPrintState(state)
                     textFile.write("---------------------------------------------------\n")
                 # make new generation
                 self.indexToEval = 0
@@ -478,22 +470,6 @@ class AIPlayer(Player):
                 best = i
 
         return best
-
-    ##
-    # buildState
-    #
-    # Description: build the state corresponding to the gene specified by the given index
-    #
-    # Parameters:
-    #   -index : index of gene to build state for
-    #
-    # Return : state GameState object
-    def buildState(self, index):
-        pass
-
-
-
-
 
 
 ################################################################################
