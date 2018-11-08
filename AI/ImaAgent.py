@@ -201,20 +201,21 @@ class Gene():
         # build phase 1
         constructions = self.getConstructions(SETUP_PHASE_1)
         hill = Building(constructions[0], ANTHILL, 0)
-        self.geneState.board[hill.coords[0]][hill.coords[1]].constr = hill
+        self.geneState.inventories[0].constrs.append(hill)
+
         tunnel = Building(constructions[1], TUNNEL, 0)
-        self.geneState.board[tunnel.coords[0]][tunnel.coords[1]].constr = tunnel
+        self.geneState.inventories[0].constrs.append(tunnel)
         grass = []
         for i in range(0,9):
             grass.append(Building(constructions[i+2], GRASS, 0))
-            self.geneState.board[grass[i].coords[0]][grass[i].coords[1]].constr = grass[i]
+            self.geneState.inventories[2].constrs.append(grass[i])
 
         # build phase 2
         constructions = self.getConstructions(SETUP_PHASE_2)
         food1 = Building(constructions[0], FOOD, 0)
-        self.geneState.board[food1.coords[0]][food1.coords[1]].constr = food1
         food2 = Building(constructions[1], FOOD, 0)
-        self.geneState.board[food2.coords[0]][food2.coords[1]].constr = food2
+        self.geneState.inventories[2].constrs.append(food1)
+        self.geneState.inventories[2].constrs.append(food2)
 
         #add Booger's set locations
         constructions = [(9,9), (4, 8),
@@ -222,13 +223,13 @@ class Gene():
                 (9,7), (8,8), (7,9), \
                 (9,8), (8,9) ]
         hill = Building(constructions[0], ANTHILL, 0)
-        self.geneState.board[hill.coords[0]][hill.coords[1]].constr = hill
+        self.geneState.inventories[1].constrs.append(hill)
         tunnel = Building(constructions[1], TUNNEL, 0)
-        self.geneState.board[tunnel.coords[0]][tunnel.coords[1]].constr = tunnel
+        self.geneState.inventories[1].constrs.append(tunnel)
         grass = []
         for i in range(0,9):
             grass.append(Building(constructions[i+2], GRASS, 0))
-            self.geneState.board[grass[i].coords[0]][grass[i].coords[1]].constr = grass[i]
+            self.geneState.inventories[2].constrs.append(grass[i])
 
 
 
@@ -422,16 +423,17 @@ class AIPlayer(Player):
         # if done with current gene, advance to next
         if self.gamesPlayed == self.gamesPerGene :
             # if that was the last gene, make a new generation
+            print('test 1: ', self.indexToEval)
             if self.indexToEval == self.popSize - 1:
+                print('test 2')
                 # generation has ended print to evidence file
                 bestIdx = self.getBestGene()
                 bestGene = self.currentPop[bestIdx]
-                # print(bestGene.cells)
                 bestGene.buildGeneState()
                 state = bestGene.geneState
                 print("Best Gene Score = ", self.currentFitness[bestIdx])
                 asciiPrintState(state)
-                print("---------------------------------------------------\n")
+                print("=========================================================")
                 # make new generation
                 self.indexToEval = 0
                 self.makeNextGen()
@@ -452,7 +454,10 @@ class AIPlayer(Player):
         for i in range(0, len(self.currentFitness)):
             if self.currentFitness[i] > self.currentFitness[best] :
                 best = i
-
+            elif self.currentFitness[i] == self.currentFitness[best] :
+                test = random.random()
+                if test >  0.5 :
+                    best = i
         return best
 
 
