@@ -26,7 +26,7 @@ class Gene():
 
         # 40 for our side, 40 on enemy side
         self.numCells = 80
-        self.chanceOfMutate = 0.05
+        self.chanceOfMutate = 0.05 # TODO: compare to 0.05
 
         # Gene contents
         if cells == None:
@@ -111,11 +111,10 @@ class Gene():
         mutation = random.random()
         if mutation <= self.chanceOfMutate:
             # mutate the gene
-            idxToMutate = random.randint(0, self.numCells)
+            idxToMutate = random.randint(0, self.numCells-1)
             val = random.randint(0, 2**31 -1)
             # print('mutating: ', gene.cells[idxToMutate], ' to ', val)
             gene.cells[idxToMutate] = val
-
 
         return gene
 
@@ -218,8 +217,8 @@ class AIPlayer(Player):
     def __init__(self, inputPlayerId):
         super(AIPlayer,self).__init__(inputPlayerId, "Ima Agent")
         # general values to determine scope of algorithm
-        self.popSize = 10 #TODO: increase to min 1000
-        self.gamesPerGene = 15 #TODO increase to min 1000
+        self.popSize = 100 #TODO: increase to min 1000
+        self.gamesPerGene = 150 #TODO increase to min 1000
         # data to reprsent the current population & fitness
         self.currentPop = []
         self.currentFitness = []
@@ -248,44 +247,6 @@ class AIPlayer(Player):
     def getPlacement(self, currentState):
         # TODO, remove code below once getConstructions is finished
         return self.currentPop[self.indexToEval].getConstructions(currentState.phase)
-        # numToPlace = 0
-        # #implemented by students to return their next move
-        # if currentState.phase == SETUP_PHASE_1:    #stuff on my side
-        #     numToPlace = 11
-        #     moves = []
-        #     for i in range(0, numToPlace):
-        #         move = None
-        #         while move == None:
-        #             #Choose any x location
-        #             x = random.randint(0, 9)
-        #             #Choose any y location on your side of the board
-        #             y = random.randint(0, 3)
-        #             #Set the move if this space is empty
-        #             if currentState.board[x][y].constr == None and (x, y) not in moves:
-        #                 move = (x, y)
-        #                 #Just need to make the space non-empty. So I threw whatever I felt like in there.
-        #                 currentState.board[x][y].constr == True
-        #         moves.append(move)
-        #     return moves
-        # elif currentState.phase == SETUP_PHASE_2:   #stuff on foe's side
-        #     numToPlace = 2
-        #     moves = []
-        #     for i in range(0, numToPlace):
-        #         move = None
-        #         while move == None:
-        #             #Choose any x location
-        #             x = random.randint(0, 9)
-        #             #Choose any y location on enemy side of the board
-        #             y = random.randint(6, 9)
-        #             #Set the move if this space is empty
-        #             if currentState.board[x][y].constr == None and (x, y) not in moves:
-        #                 move = (x, y)
-        #                 #Just need to make the space non-empty. So I threw whatever I felt like in there.
-        #                 currentState.board[x][y].constr == True
-        #         moves.append(move)
-        #     return moves
-        # else:
-        #     return [(0, 0)]
 
     ##
     # initializePop
