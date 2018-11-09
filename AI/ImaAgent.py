@@ -9,6 +9,9 @@ from GameState import *
 from AIPlayerUtils import *
 import random
 from time import time
+
+
+
 ##
 ##
 # Gene class
@@ -17,8 +20,9 @@ from time import time
 # through an array and provides functionality to manipulate the gene as necessary
 #
 ##
-
 class Gene():
+
+    ##
     #__init__
     # Description: Creates a new Gene
     ##
@@ -27,6 +31,7 @@ class Gene():
         # 40 for our side, 40 on enemy side
         self.numCells = 80
 
+        #
         self.chanceOfMutate = 0.05
 
         #state represented by gene
@@ -37,6 +42,8 @@ class Gene():
             self.initializeGene()
         else:
             self.cells = cells
+
+
 
     ##
     # initializeGene
@@ -55,6 +62,8 @@ class Gene():
         for i in range (0, self.numCells):
             self.cells += [random.randint(0, 2**31 -1)]
 
+
+
     ##
     # mateGenes
     #
@@ -67,7 +76,7 @@ class Gene():
     #
     # Return: 2 child Genes (1 where the first half comes from current gene, and
     # a second where the first half comes from otherParent) and the crossover point (for testing)
-    ## TODO remove unecessary code
+    ##
     def mateGenes(self, otherParent):
 
         #select crossover point
@@ -87,6 +96,8 @@ class Gene():
 
         return (self.mutateGene(child1), self.mutateGene(child2), crossPoint)
 
+
+
     ##
     # mutate
     #
@@ -98,6 +109,7 @@ class Gene():
     # Return: a gene, either mutated or left alone
     ##
     def mutateGene(self, gene):
+
         # mutate if needed
         mutation = random.random()
         if mutation <= self.chanceOfMutate:
@@ -108,6 +120,8 @@ class Gene():
 
         return gene
 
+
+
     ##
     # getCoords
     #
@@ -115,18 +129,20 @@ class Gene():
     #
     # Return: a tuple representing a location on the gameboard or -1 for error
     def getCoords(self, index):
+
         # error check
         if index < 0 or index > self.numCells - 1:
             return -1
+
         # if in the second half of cells, add an offset to put the cell on the enemy side
         if index >= 40:
             index += 20 # number of neutral cells
-        # x location
         x = index % 10
-        # y location
         y = int(index / 10)
 
         return (x,y)
+
+
 
     ##
     # getConstructions
@@ -144,6 +160,7 @@ class Gene():
     # 9 grqss locations) or (enemy food 1, enemy food 2)
     ##
     def getConstructions(self, phase):
+
         #variables
         constructions = []
         constructionIndices = []
@@ -187,17 +204,20 @@ class Gene():
         #done
         return constructions
 
+
+
     ##
     # buildGeneState
     #
     # Description: build a state corresponding to current gene based on the cell
-    # values of the gene and the oritentation of the enemy (Booger's) constructions
+    # values of the gene and the orientation of the enemy (Booger's) constructions
     # Note: state does NOT include placement of ImaAgent food or ant placement, because
     # these do not impact the placement decision.
     #
     ##
     def buildGeneState(self):
         self.geneState = GameState.getBlankState()
+
         # build phase 1
         constructions = self.getConstructions(SETUP_PHASE_1)
         hill = Building(constructions[0], ANTHILL, 0)
@@ -205,6 +225,7 @@ class Gene():
 
         tunnel = Building(constructions[1], TUNNEL, 0)
         self.geneState.inventories[0].constrs.append(tunnel)
+
         grass = []
         for i in range(0,9):
             grass.append(Building(constructions[i+2], GRASS, 0))
@@ -257,7 +278,7 @@ class AIPlayer(Player):
          # general values to determine scope of algorithm
         self.popSize = 10
         self.gamesPerGene = 10
-        # data to reprsent the current population & fitness
+        # data to represent the current population & fitness
         self.currentPop = []
         self.currentFitness = []
         self.defaultFitness = 2 * self.gamesPerGene # to avoid negative fitness values that will
@@ -269,10 +290,11 @@ class AIPlayer(Player):
         self.gamesPlayed = 0
         self.file = None
 
+
+
     ##
     #getPlacement
     #
-    # TODO: adjust to use genetic algorithm
     #Description: called during setup phase for each Construction that
     #   must be placed by the player.  These items are: 1 Anthill on
     #   the player's side; 1 tunnel on player's side; 9 grass on the
@@ -285,10 +307,13 @@ class AIPlayer(Player):
     #Return: The coordinates of where the construction is to be placed
     ##
     def getPlacement(self, currentState):
+
         #redirect prints to file
         self.file = open("evidence1.txt","a")
-        #sys.stdout = self.file
+        sys.stdout = self.file
         return self.currentPop[self.indexToEval].getConstructions(currentState.phase)
+
+
 
     ##
     # initializePop
@@ -296,13 +321,19 @@ class AIPlayer(Player):
     # and sets the default value of the fitness to 0.
     ##
     def initializePop(self):
+
         for i in range(0, self.popSize):
+
             # make a new gene
             gene = Gene()
+
             # add it to the current Population
             self.currentPop.append(gene)
+
             # set the default fitness to 0
             self.currentFitness.append(self.defaultFitness)
+
+
 
     ##
     # generateChildren
@@ -318,41 +349,37 @@ class AIPlayer(Player):
         rtnVal = parents[0].mateGenes(parents[1])
         return [rtnVal[0], rtnVal[1]] # crossPoint only needed for testing
 
+
+
     ##
     # makeNextGen
     # Description: select the most fit groups of parents and fill the next generation
     #
     ##
     def makeNextGen(self):
-        print('started make next gen')
-        t0 = time()
-        nextGen = []
+
         # until my next generation is full, keep selecting parents, mating them,
         # and adding the children to the next generation
+        nextGen = []
         while len(nextGen) < self.popSize:
             # select parents
-            t0 = time()
             parents = self.selectParents()
-            t1 = time()
-            print('parent selection: ', t1 - t0)
+
             # mate parents
             children = self.generateChildren(parents)
-            t2 = time()
+
             # add chldren to next generation
             nextGen += children
-
-            print('child generation: ', t2-t1)
-
 
         # retire current population by resetting it as the new generation
         self.currentPop = nextGen
 
         # reset all fitness values
         self.currentFitness = [self.defaultFitness] * self.popSize
-        t4 = time()
-        print('total makeNextGen: ', t4 - t0)
 
-    ## TODO EDIT: do we want any tweaks, prune bottom 10% of population,
+
+
+    ##
     # allow parent to 'self mate' and continue on a supposedly goot gene set....
     # selectParents
     #
@@ -362,22 +389,21 @@ class AIPlayer(Player):
     # Return: a tuple of parent genes
     ##
     def selectParents(self):
+
         # get sum of fitnesses
-        print('started parent selection')
         sum = 0
-        t0 = time()
         for score in self.currentFitness:
             sum += score
-        t1 = time()
-        # print('parent sum: ', t1-t0)
+    
         # continue selection until 2 valid parents are generated
         selected = []
         count = 0
         while len(selected) < 2:
-            # print('looping for parent')
             count = count + 1
+
             # generate random value * sum
             val = random.random() * sum
+
             # select using random value
             chosen = -1
             for idx in range(0, len(self.currentPop)):
@@ -385,18 +411,16 @@ class AIPlayer(Player):
                 if val < 0 :
                     chosen = idx
                     break
+
             # don't choose the same parent twice
             if not chosen in selected:
                 selected.append(chosen)
-            # print('selected 1 parent')
 
         # return the selected parents
-
         parents = (self.currentPop[selected[0]], self.currentPop[selected[1]])
-        if(parents[1].cells == parents[0].cells):
-            print('same parent')
-        print('number of loops: ', count)
         return parents
+
+
 
     ##
     #getMove
@@ -408,6 +432,7 @@ class AIPlayer(Player):
     #Return: The Move to be made
     ##
     def getMove(self, currentState):
+
         moves = listAllLegalMoves(currentState)
         selectedMove = moves[random.randint(0,len(moves) - 1)];
 
@@ -431,15 +456,19 @@ class AIPlayer(Player):
         #Attack a random enemy.
         return enemyLocations[random.randint(0, len(enemyLocations) - 1)]
 
+
+
     ##
     #registerWin
     #
     # Updates the fitness for current gene and advances to the next gene if necessary.
-    # TODO: add code to write to evidence file
+    #
     #
     def registerWin(self, hasWon):
+
         # update the games played
         self.gamesPlayed += 1
+
         # update fitness
         if hasWon:
             self.currentFitness[self.indexToEval] += 1
@@ -452,10 +481,10 @@ class AIPlayer(Player):
         if self.gamesPlayed == self.gamesPerGene:
             # reset the number of games played
             self.gamesPlayed = 0
+
             # if that was the last gene, make a new generation
             if self.indexToEval == self.popSize - 1:
                 # generation has ended print to evidence file
-                t0 = time()
 
                 bestIdx = self.getBestGene()
                 bestGene = self.currentPop[bestIdx]
@@ -465,20 +494,16 @@ class AIPlayer(Player):
                 asciiPrintState(state)
                 print("=========================================================")
 
-                t1 = time()
-
                 # make new generation
                 self.indexToEval = 0
                 self.makeNextGen()
-
-                t2 = time()
-
-
 
             else: # otherwise, move to next
                 self.indexToEval += 1
 
         self.file.close()
+
+
 
     ##
     # getBestGene
@@ -497,6 +522,7 @@ class AIPlayer(Player):
                 if test >  0.5 :
                     best = i
         return best
+
 
 
 ################################################################################
