@@ -276,9 +276,9 @@ class AIPlayer(Player):
         super(AIPlayer,self).__init__(inputPlayerId, "Ima Agent")
 
          # general values to determine scope of algorithm
-        self.popSize = 10
-        self.gamesPerGene = 10
-        # data to represent the current population & fitness
+        self.popSize = 500
+        self.gamesPerGene = 100
+        # data to reprsent the current population & fitness
         self.currentPop = []
         self.currentFitness = []
         self.defaultFitness = 2 * self.gamesPerGene # to avoid negative fitness values that will
@@ -357,14 +357,12 @@ class AIPlayer(Player):
     #
     ##
     def makeNextGen(self):
-
         # until my next generation is full, keep selecting parents, mating them,
         # and adding the children to the next generation
         nextGen = []
         while len(nextGen) < self.popSize:
             # select parents
             parents = self.selectParents()
-
             # mate parents
             children = self.generateChildren(parents)
 
@@ -415,6 +413,14 @@ class AIPlayer(Player):
             # don't choose the same parent twice
             if not chosen in selected:
                 selected.append(chosen)
+
+            # safeguard while loop -- should happen very rarely
+            if count >= 5:
+                break
+
+        # add any other needed parents by highest fitness score
+        while len(selected) < 2:
+            selected.append(self.getBestGene())
 
         # return the selected parents
         parents = (self.currentPop[selected[0]], self.currentPop[selected[1]])
@@ -472,10 +478,10 @@ class AIPlayer(Player):
         # update fitness
         if hasWon:
             self.currentFitness[self.indexToEval] += 1
-            print('won: ', self.currentFitness[self.indexToEval])
+            # print('won: ', self.currentFitness[self.indexToEval])
         else:
             self.currentFitness[self.indexToEval] -= 1
-            print('lost: ', self.currentFitness[self.indexToEval])
+            # print('lost: ', self.currentFitness[self.indexToEval])
 
         # if done with current gene, advance to next
         if self.gamesPlayed == self.gamesPerGene:
