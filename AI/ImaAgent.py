@@ -255,8 +255,8 @@ class AIPlayer(Player):
         super(AIPlayer,self).__init__(inputPlayerId, "Ima Agent")
 
          # general values to determine scope of algorithm
-        self.popSize = 10
-        self.gamesPerGene = 10
+        self.popSize = 500
+        self.gamesPerGene = 100
         # data to reprsent the current population & fitness
         self.currentPop = []
         self.currentFitness = []
@@ -287,7 +287,7 @@ class AIPlayer(Player):
     def getPlacement(self, currentState):
         #redirect prints to file
         self.file = open("evidence1.txt","a")
-        #sys.stdout = self.file
+        sys.stdout = self.file
         return self.currentPop[self.indexToEval].getConstructions(currentState.phase)
 
     ##
@@ -324,7 +324,7 @@ class AIPlayer(Player):
     #
     ##
     def makeNextGen(self):
-        print('started make next gen')
+        # print('started make next gen')
         t0 = time()
         nextGen = []
         # until my next generation is full, keep selecting parents, mating them,
@@ -334,14 +334,14 @@ class AIPlayer(Player):
             t0 = time()
             parents = self.selectParents()
             t1 = time()
-            print('parent selection: ', t1 - t0)
+            # print('parent selection: ', t1 - t0)
             # mate parents
             children = self.generateChildren(parents)
             t2 = time()
             # add chldren to next generation
             nextGen += children
 
-            print('child generation: ', t2-t1)
+            # print('child generation: ', t2-t1)
 
 
         # retire current population by resetting it as the new generation
@@ -350,7 +350,7 @@ class AIPlayer(Player):
         # reset all fitness values
         self.currentFitness = [self.defaultFitness] * self.popSize
         t4 = time()
-        print('total makeNextGen: ', t4 - t0)
+        # print('total makeNextGen: ', t4 - t0)
 
     ## TODO EDIT: do we want any tweaks, prune bottom 10% of population,
     # allow parent to 'self mate' and continue on a supposedly goot gene set....
@@ -363,7 +363,7 @@ class AIPlayer(Player):
     ##
     def selectParents(self):
         # get sum of fitnesses
-        print('started parent selection')
+        # print('started parent selection')
         sum = 0
         t0 = time()
         for score in self.currentFitness:
@@ -388,14 +388,19 @@ class AIPlayer(Player):
             # don't choose the same parent twice
             if not chosen in selected:
                 selected.append(chosen)
+
+            # safeguard while loop -- should happen very rarely
+            if count >= 5:
+                break
             # print('selected 1 parent')
 
-        # return the selected parents
+        # add any other needed parents by highest fitness score
+        while len(selected) < 2:
+            selected.append(self.getBestGene())
 
+        # return the selected parents
         parents = (self.currentPop[selected[0]], self.currentPop[selected[1]])
-        if(parents[1].cells == parents[0].cells):
-            print('same parent')
-        print('number of loops: ', count)
+        # print('number of loops: ', count)
         return parents
 
     ##
@@ -443,10 +448,10 @@ class AIPlayer(Player):
         # update fitness
         if hasWon:
             self.currentFitness[self.indexToEval] += 1
-            print('won: ', self.currentFitness[self.indexToEval])
+            # print('won: ', self.currentFitness[self.indexToEval])
         else:
             self.currentFitness[self.indexToEval] -= 1
-            print('lost: ', self.currentFitness[self.indexToEval])
+            # print('lost: ', self.currentFitness[self.indexToEval])
 
         # if done with current gene, advance to next
         if self.gamesPlayed == self.gamesPerGene:
