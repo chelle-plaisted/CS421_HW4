@@ -32,7 +32,7 @@ class Gene():
         self.numCells = 80
 
         #
-        self.chanceOfMutate = 0.05
+        self.chanceOfMutate = 0.25
 
         #state represented by gene
         self.geneState = None
@@ -110,13 +110,20 @@ class Gene():
     ##
     def mutateGene(self, gene):
 
-        # mutate if needed
+        # chance
         mutation = random.random()
+
         if mutation <= self.chanceOfMutate:
-            # mutate the gene
-            idxToMutate = random.randint(0, self.numCells-1)
-            val = random.randint(0, 2**31 -1)
-            gene.cells[idxToMutate] = val
+
+            # go through each cell in gene, pick new number for it at random
+            cellMutationChance = random.random()
+            for cell in gene.cells:
+                if random.random() < cellMutationChance:
+                    cell = random.randint(0, 2**31 - 1)
+
+            # idxToMutate = random.randint(0, self.numCells-1)
+            # val = random.randint(0, 2**31 -1)
+            # gene.cells[idxToMutate] = val
 
         return gene
 
@@ -276,8 +283,8 @@ class AIPlayer(Player):
         super(AIPlayer,self).__init__(inputPlayerId, "Ima Agent")
 
          # general values to determine scope of algorithm
-        self.popSize = 500
-        self.gamesPerGene = 100
+        self.popSize = 15
+        self.gamesPerGene = 15
         # data to reprsent the current population & fitness
         self.currentPop = []
         self.currentFitness = []
